@@ -8,14 +8,14 @@ Drag tasks across columns, chat via comments, and see every change appear instan
 
 ## ✨ Features
 
-- **User Authentication** – Register/Login with JWT‑based auth.
-- **Project Management** – Create projects and invite team members (Admin/Member roles).
-- **Kanban Board** – Visualise tasks in **Backlog**, **To Do**, **In Progress**, and **Done** columns.
-- **Drag & Drop** – Seamless reordering and status updates using `@hello-pangea/dnd` with **optimistic UI**.
-- **Real‑time Sync** – WebSocket (Socket.io) broadcasts task moves, comments, and activity instantly to all connected clients.
-- **Activity Logs** – Every action (create, move, assign, comment) is stored in a MongoDB collection for full audit history.
-- **Role‑Based Access Control (RBAC)** – Admins can delete tasks and manage members; Members can create and move tasks.
-- **Polyglot Persistence** – PostgreSQL for relational core data, MongoDB for high‑volume unstructured logs.
+- User Authentication – Register/Login with JWT‑based auth.
+- Project Management – Create projects and invite team members (Admin/Member roles).
+- Kanban Board – Visualise tasks in Backlog, To Do, In Progress, and Done columns.
+- Drag & Drop – Seamless reordering and status updates using `@hello-pangea/dnd` with optimistic UI.
+- Real‑time Sync – WebSocket (Socket.io) broadcasts task moves, comments, and activity instantly to all connected clients.
+- Activity Logs – Every action (create, move, assign, comment) is stored in a MongoDB collection for full audit history.
+- Role‑Based Access Control (RBAC) – Admins can delete tasks and manage members; Members can create and move tasks.
+- Polyglot Persistence – PostgreSQL for relational core data, MongoDB for high‑volume unstructured logs.
 
 ---
 
@@ -85,7 +85,7 @@ Drag tasks across columns, chat via comments, and see every change appear instan
    npm install
    ```
 
-3. **Install frontend dependencies**
+3. Install frontend dependencies
 
    ```bash
    cd ../client
@@ -171,7 +171,7 @@ Make sure MongoDB is running. The first time you start the server, Mongoose will
    npm run dev      # starts with nodemon (or node index.js)
    ```
 
-2. **Start the frontend**
+2. Start the frontend
    ```bash
    cd client
    npm start        # runs on http://localhost:3000
@@ -272,8 +272,5 @@ This project is licensed under the MIT License – feel free to use it for your 
 > - Designed a polyglot database architecture: PostgreSQL for relational data, MongoDB for unstructured audit logs.
 > - Implemented real‑time synchronisation via WebSockets (Socket.io) for instant task updates and activity feeds.
 > - Added Role‑Based Access Control (RBAC) to restrict project management actions to Admin users.
-
-```
-
-This README is ready to drop into your project root. Let me know if you’d like any section expanded or tailored!
+````
 ```
