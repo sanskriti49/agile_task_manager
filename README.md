@@ -32,9 +32,7 @@ Drag tasks across columns, chat via comments, and see every change appear instan
 ---
 
 ## 📁 Project Structure
-```
-
-agile-task-manager/
+```agile-task-manager/
 ├── client/ # React app
 │ ├── public/
 │ └── src/
@@ -59,7 +57,6 @@ agile-task-manager/
 │ └── index.js # Entry point
 ├── .env
 └── README.md
-
 ````
 
 ---
