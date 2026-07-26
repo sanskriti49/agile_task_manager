@@ -1,1 +1,200 @@
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Onest:wght@100..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Hubot+Sans:ital,wght@0,200..900;1,200..900&display=swap");
 @import "tailwindcss";
+
+.ease-premium {
+	transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+.mono {
+	font-family: "IBM Plex Mono", ui-monospace, monospace;
+}
+.display {
+	font-family: "Space Grotesk", ui-sans-serif, sans-serif;
+}
+.work-sans {
+	font-family: "Work Sans", ui-sans-serif;
+}
+.hubot-sans {
+	font-family: "Hubot Sans", ui-sans-serif;
+}
+.onest {
+	font-family: "Onest", ui-sans-serif;
+}
+
+html {
+	scroll-behavior: smooth;
+}
+
+button {
+	cursor: pointer;
+}
+
+.glass-header {
+	background: rgba(255, 255, 255, 0.78);
+	backdrop-filter: blur(14px) saturate(160%);
+	-webkit-backdrop-filter: blur(14px) saturate(160%);
+}
+
+.dot-grid {
+	background-image: radial-gradient(
+		circle,
+		rgba(100, 116, 139, 0.16) 1px,
+		transparent 1px
+	);
+	background-size: 22px 22px;
+}
+
+/* Modern Card Shadows */
+.card-elevated {
+	box-shadow:
+		0 1px 2px rgba(15, 23, 42, 0.05),
+		0 1px 1px rgba(15, 23, 42, 0.04);
+}
+.card-elevated:hover {
+	box-shadow:
+		0 4px 6px -1px rgba(15, 23, 42, 0.08),
+		0 12px 28px -8px rgba(20, 184, 166, 0.2); /* Teal shadow hint */
+}
+
+.panel-elevated {
+	box-shadow: -8px 0 32px -12px rgba(15, 23, 42, 0.18);
+}
+
+/* Animations */
+@keyframes cardIn {
+	from {
+		opacity: 0;
+		transform: translateY(6px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+.card-enter {
+	animation: cardIn 0.34s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes dropFlash {
+	0% {
+		box-shadow: 0 0 0 0 rgba(20, 184, 166, 0.35);
+	} /* Teal flash */
+	100% {
+		box-shadow: 0 0 0 10px rgba(20, 184, 166, 0);
+	}
+}
+.drop-flash {
+	animation: dropFlash 0.55s ease-out;
+}
+
+@keyframes pulseDot {
+	0% {
+		box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.45);
+	}
+	100% {
+		box-shadow: 0 0 0 5px rgba(16, 185, 129, 0);
+	}
+}
+.pulse-dot {
+	animation: pulseDot 1.8s ease-out infinite;
+}
+
+/* =========================================
+   Sleek macOS-style Scrollbars
+========================================= */
+
+/* Webkit (Chrome, Safari, Edge) */
+/* Webkit (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+	width: 6px;
+	height: 6px;
+}
+::-webkit-scrollbar-track {
+	background: transparent;
+}
+::-webkit-scrollbar-thumb {
+	background: rgba(
+		100,
+		116,
+		139,
+		0.3
+	); /* Subtle slate for everyday visibility */
+	border-radius: 999px;
+	transition: background 0.2s ease;
+}
+::-webkit-scrollbar-thumb:hover {
+	background: rgba(20, 184, 166, 0.5); /* Refreshing Teal on hover */
+}
+
+/* Firefox */
+* {
+	scrollbar-width: thin;
+	scrollbar-color: rgba(100, 116, 139, 0.3) transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.card-enter,
+	.drop-flash,
+	.pulse-dot {
+		animation: none !important;
+	}
+	* {
+		transition-duration: 0.01ms !important;
+	}
+}
+
+/* Custom Scrollbar for Kanban Columns */
+.custom-scroll::-webkit-scrollbar {
+	width: 6px;
+}
+.custom-scroll::-webkit-scrollbar-track {
+	background: transparent;
+}
+.custom-scroll::-webkit-scrollbar-thumb {
+	background-color: rgba(203, 213, 225, 0.6); /* slate-300 */
+	border-radius: 10px;
+}
+.custom-scroll:hover::-webkit-scrollbar-thumb {
+	background-color: rgba(148, 163, 184, 0.8); /* slate-400 */
+}
+
+/* Modal Entrance Animation */
+@keyframes modalIn {
+	0% {
+		opacity: 0;
+		transform: scale(0.95) translateY(10px);
+	}
+	100% {
+		opacity: 1;
+		transform: scale(1) translateY(0);
+	}
+}
+
+/* Flash animation when a card is dropped into a column */
+@keyframes pulse-once {
+	0% {
+		box-shadow: 0 0 0 0 rgba(20, 184, 166, 0.4);
+	}
+	70% {
+		box-shadow: 0 0 0 8px rgba(20, 184, 166, 0);
+	}
+	100% {
+		box-shadow: 0 0 0 0 rgba(20, 184, 166, 0);
+	}
+}
+.animate-pulse-once {
+	animation: pulse-once 0.6s ease-out;
+}
+
+@keyframes popIn {
+	from {
+		opacity: 0;
+		transform: translateY(-4px) scale(0.98);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0) scale(1);
+	}
+}
