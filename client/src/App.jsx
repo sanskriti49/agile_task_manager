@@ -10,8 +10,8 @@ import WorkspacesDashboard from "./pages/WorkspacesDashboard";
 import MainLayout from "./layouts/MainLayout";
 import Board from "./components/board/Board";
 import { useBoardData } from "./hooks/useBoardData";
-import LoginPage from "./pages/LoginPage";
-import SignUpPage from "./pages/SignUpPage";
+import AuthPages, { LoginPage, SignupPage } from "./pages/AuthPages";
+import RootLayout from "./layouts/RootLayout"; // <-- Import the new layout
 
 function ProtectedRoute({ children }) {
 	const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -23,37 +23,43 @@ function createAppRouter(boardData) {
 	return createBrowserRouter(
 		[
 			{
-				path: "/",
-				element: <LandingPage />,
-			},
-			{
-				path: "/login",
-				element: <LoginPage />,
-			},
-			{
-				path: "/sign-up",
-				element: <SignUpPage />,
-			},
-			{
-				element: (
-					<ProtectedRoute>
-						<MainLayout boardData={boardData} />
-					</ProtectedRoute>
-				),
+				// Wrap everything in RootLayout so GSAP handles all transitions
+				element: <RootLayout />,
 				children: [
 					{
-						path: "dashboard",
-						element: <WorkspacesDashboard />,
+						path: "/",
+						element: <LandingPage />,
 					},
 					{
-						path: "workspace/:id",
-						element: <Board boardData={boardData} />,
+						path: "/login",
+						element: <LoginPage />,
+					},
+					{
+						path: "/signup",
+						element: <SignupPage />,
+					},
+					{
+						element: (
+							<ProtectedRoute>
+								<MainLayout boardData={boardData} />
+							</ProtectedRoute>
+						),
+						children: [
+							{
+								path: "dashboard",
+								element: <WorkspacesDashboard />,
+							},
+							{
+								path: "workspace/:id",
+								element: <Board boardData={boardData} />,
+							},
+						],
+					},
+					{
+						path: "*",
+						element: <Navigate to="/" replace />,
 					},
 				],
-			},
-			{
-				path: "*",
-				element: <Navigate to="/" replace />,
 			},
 		],
 		{
@@ -67,7 +73,6 @@ function createAppRouter(boardData) {
 
 export default function App() {
 	const boardData = useBoardData();
-
 	const router = createAppRouter(boardData);
 
 	return <RouterProvider router={router} />;

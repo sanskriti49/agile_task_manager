@@ -1,6 +1,6 @@
 import { ArrowRight, Plus, MessageSquare } from "lucide-react";
 
-export const PRODUCT_NAME = "SYNCRO";
+export const PRODUCT_NAME = "Flux";
 export const BOARD_DATA = {
 	Backlog: [
 		{

@@ -13,7 +13,7 @@ import { CURRENT_USER } from "../../data/constants";
 import CreateWorkspaceModal from "../modals/CreateWorkspaceModal";
 import { useWorkspaceStore } from "../../store/useWorkspaceStore";
 
-const PRODUCT_NAME = "Syncro";
+const PRODUCT_NAME = "Flux";
 const FOCUS_RING_DARK =
 	"focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950";
 

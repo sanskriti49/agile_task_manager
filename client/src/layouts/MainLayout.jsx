@@ -13,40 +13,43 @@ export default function MainLayout({ boardData }) {
 	const location = useLocation();
 	const outlet = useOutlet();
 	const pageRef = useRef(null);
+	const isFirstRender = useRef(true);
 
 	useEffect(() => {
-		// Animate the page content in whenever the route (location.pathname) changes
+		// Skip the very first render of MainLayout, because RootLayout
+		// is already handling the entrance animation for the whole page.
+		if (isFirstRender.current) {
+			isFirstRender.current = false;
+			return;
+		}
+
+		// Only animate if we are switching between dashboard inner-pages
 		if (pageRef.current) {
 			gsap.fromTo(
 				pageRef.current,
 				{
 					opacity: 0,
-					y: 20, // Slight slide up
+					y: 12, // Slightly smaller slide for inner transitions
 				},
 				{
 					opacity: 1,
 					y: 0,
-					duration: 0.4,
+					duration: 0.3,
 					ease: "power2.out",
+					clearProps: "all",
 				},
 			);
 		}
-	}, [location.pathname]); // Trigger animation on path change
+	}, [location.pathname]);
 
 	return (
 		<div
 			className="h-[100dvh] w-full flex overflow-hidden bg-slate-50 text-slate-800 min-h-0"
 			style={{ fontFamily: "'Inter', ui-sans-serif, system-ui, sans-serif" }}
 		>
-			{/* Persistent Sidebar */}
 			<Sidebar />
 
-			{/* Main Content Area */}
 			<div className="flex-1 flex flex-col min-w-0 min-h-0 relative overflow-y-auto">
-				{/* 
-                    Using key={location.pathname} forces React to treat this as a brand new element 
-                    when the URL changes, triggering a fresh mount. 
-                */}
 				<div
 					ref={pageRef}
 					key={location.pathname}
@@ -56,7 +59,6 @@ export default function MainLayout({ boardData }) {
 				</div>
 			</div>
 
-			{/* Persistent Drawers */}
 			<ActivityDrawer
 				activity={activity}
 				activityOpen={activityOpen}
@@ -64,7 +66,6 @@ export default function MainLayout({ boardData }) {
 			/>
 			<TicketDetailPanel boardData={boardData} />
 
-			{/* Overlay for drawers */}
 			{(activityOpen || selected) && (
 				<div
 					className="fixed inset-0 bg-slate-900/10 z-20 transition-opacity duration-300"

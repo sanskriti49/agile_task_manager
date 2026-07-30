@@ -2,6 +2,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Onest:wght@100..900&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Hubot+Sans:ital,wght@0,200..900;1,200..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
 @import "tailwindcss";
 
 .ease-premium {
@@ -12,6 +13,9 @@
 }
 .display {
 	font-family: "Space Grotesk", ui-sans-serif, sans-serif;
+}
+.inter {
+	font-family: "Inter", ui-sans-serif, sans-serif;
 }
 .work-sans {
 	font-family: "Work Sans", ui-sans-serif;

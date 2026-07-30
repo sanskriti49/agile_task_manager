@@ -1,190 +1,122 @@
-import { ArrowRight, GripVertical, MessageSquare } from "lucide-react";
-import { memo, useEffect, useState } from "react";
-import { BOARD_DATA, TAG_STYLES } from "../data/constants";
+import { memo, useEffect, useState, useCallback, useRef } from "react";
+import { ArrowRight, Check, Zap } from "lucide-react";
 
-const TicketCard = memo(function TicketCard({ ticket, index, flashed }) {
-	return (
-		<div
-			// 🚀 PERF: Use transition-transform instead of transition-all to avoid repainting shadows/borders on hover
-			className={
-				"group rounded-xl bg-white ring-1 ring-slate-200/80 p-3 card-elevated card-enter transition-transform ease-premium duration-300 hover:-translate-y-0.5 " +
-				(ticket.justMoved && flashed ? " drop-flash" : "")
-			}
-			style={{ animationDelay: `${index * 70}ms`, willChange: "transform" }}
-		>
-			<div className="flex items-start justify-between gap-2">
-				<span className="mono text-[11px] tracking-wide text-slate-400">
-					{ticket.id}
-				</span>
-				<GripVertical className="h-3.5 w-3.5 text-slate-300 group-hover:text-slate-400 transition-colors" />
-			</div>
-			<p className="mt-1.5 text-[13px] leading-snug text-slate-700 font-medium">
-				{ticket.title}
-			</p>
-			<div className="mt-3 flex items-center justify-between">
-				<span
-					className={
-						"px-2 py-0.5 rounded-full text-[10px] font-medium ring-1 " +
-						TAG_STYLES[ticket.tag]
-					}
-				>
-					{ticket.tag}
-				</span>
-				<div className="flex items-center gap-2">
-					{ticket.comments > 0 && (
-						<span className="flex items-center gap-1 text-[11px] text-slate-400">
-							<MessageSquare className="h-3 w-3" />
-							{ticket.comments}
-						</span>
-					)}
-					<span
-						className={
-							"h-5 w-5 rounded-full flex items-center justify-center text-[9px] font-semibold text-white " +
-							ticket.assignee.color
-						}
-					>
-						{ticket.assignee.initials}
-					</span>
-				</div>
-			</div>
-		</div>
-	);
-});
+const GlobalStyles = () => (
+	<style>{`
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.95) translateY(8px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        @keyframes slideInRight {
+            0% { opacity: 0; transform: translateX(20px); }
+            100% { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        .animated-gradient {
+            background-size: 200% 200%;
+            animation: gradientShift 4s ease infinite;
+        }
+    `}</style>
+);
 
-function BoardPreview() {
-	const [flashed, setFlashed] = useState(false);
+export default function Hero({
+	PRODUCT_NAME = "Flux",
+	onGetStarted,
+	FOCUS_RING = "",
+}) {
+	const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
 
-	useEffect(() => {
-		const t = setTimeout(() => setFlashed(true), 1400);
-		return () => clearTimeout(t);
-	}, []);
-
-	const columns = Object.entries(BOARD_DATA);
-	const order = {};
-	let i = 0;
-	columns.forEach(([, tickets]) => {
-		tickets.forEach((ticket) => {
-			order[ticket.id] = i;
-			i += 1;
+	const handleMouseMove = (e) => {
+		const rect = e.currentTarget.getBoundingClientRect();
+		setMousePos({
+			x: ((e.clientX - rect.left) / rect.width) * 100,
+			y: ((e.clientY - rect.top) / rect.height) * 100,
 		});
-	});
+	};
 
 	return (
-		<div className="board-preview panel-elevated rounded-2xl bg-white/95 ring-1 ring-slate-200/70 p-4 sm:p-5">
-			<div className="flex items-center justify-between px-1 pb-4">
-				<div className="flex items-center gap-2">
-					<div className="h-2.5 w-2.5 rounded-full bg-rose-300" />
-					<div className="h-2.5 w-2.5 rounded-full bg-amber-300" />
-					<div className="h-2.5 w-2.5 rounded-full bg-teal-400" />
-				</div>
-				<span className="mono text-[11px] text-slate-400">
-					workspace / product-team
-				</span>
-			</div>
+		<>
+			<GlobalStyles />
+			<section
+				id="product"
+				onMouseMove={handleMouseMove}
+				className="relative pt-12 pb-20 sm:pt-20 sm:pb-28 overflow-hidden bg-[#070b14] text-white"
+			>
+				{/* Dynamic Mouse Glow */}
+				<div
+					className="absolute inset-0 pointer-events-none transition-opacity duration-300"
+					style={{
+						background: `radial-gradient(600px circle at ${mousePos.x}% ${mousePos.y}%, rgba(6, 182, 212, 0.08), transparent 40%)`,
+					}}
+				/>
+				<div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-gradient-to-b from-cyan-500/15 via-blue-500/10 to-transparent rounded-full blur-3xl pointer-events-none" />
+				<div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b15_1px,transparent_1px),linear-gradient(to_bottom,#1e293b15_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
 
-			<div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-				{columns.map(([column, tickets]) => (
-					<div key={column} className="min-w-0">
-						<div className="flex items-center gap-2 px-1 pb-2.5">
-							<h4 className="display text-[13px] font-semibold text-slate-700">
-								{column}
-							</h4>
-							<span className="mono text-[10px] text-slate-400">
-								{tickets.length}
-							</span>
-							{column === "In Progress" && (
-								<span className="ml-auto flex items-center gap-1.5">
-									<span className="relative flex h-2 w-2">
-										<span className="pulse-dot absolute inline-flex h-2 w-2 rounded-full bg-emerald-400" />
-										<span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
-									</span>
-									<span className="text-[10px] font-medium text-emerald-600">
-										Live
-									</span>
-								</span>
-							)}
-						</div>
-						<div className="space-y-2.5">
-							{tickets.map((ticket) => (
-								<TicketCard
-									key={ticket.id}
-									ticket={ticket}
-									index={order[ticket.id]}
-									flashed={flashed}
-								/>
-							))}
-						</div>
-					</div>
-				))}
-			</div>
-		</div>
-	);
-}
-export default function Hero({ PRODUCT_NAME, onGetStarted, FOCUS_RING }) {
-	return (
-		<section
-			id="product"
-			className="relative pt-10 pb-14 sm:pt-18 sm:pb-12 dot-grid overflow-hidden"
-		>
-			<div className="absolute inset-0 bg-gradient-to-b from-white via-white/60 to-slate-50 pointer-events-none" />
-			<div className="relative max-w-6xl mx-auto px-5 sm:px-8">
-				<div className="grid lg:grid-cols-2 gap-12 lg:gap-10 items-center">
-					<div className="max-w-2xl">
-						<span className="hero-badge mono inline-flex items-center gap-2 rounded-full bg-teal-50 ring-1 ring-teal-200 px-3 py-1 text-[11px] font-medium text-teal-700 tracking-wide">
-							<span className="relative flex h-1.5 w-1.5">
-								<span className="pulse-dot absolute inline-flex h-1.5 w-1.5 rounded-full bg-teal-400" />
-								<span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-teal-500" />
-							</span>
-							WORKSPACES, LIVE
+				<div className="relative max-w-6xl mx-auto px-5 sm:px-8 z-10">
+					<div className="flex justify-center mb-6">
+						<span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-cyan-500/30 bg-slate-900/80 text-xs font-mono font-bold text-cyan-400 uppercase tracking-widest backdrop-blur-md shadow-lg shadow-cyan-500/10">
+							<Zap className="w-3.5 h-3.5 text-cyan-400 fill-current" />
+							<span>REAL-TIME COLLABORATION REIMAGINED</span>
 						</span>
-						<h1 className="hero-title display mt-6 text-[2.75rem] sm:text-6xl font-semibold tracking-tight text-slate-900 leading-[1.05]">
-							Move a card.
-							<br />
-							Everyone sees it <span className="text-teal-500">move.</span>
+					</div>
+
+					<div className="text-center max-w-3xl mx-auto">
+						<h1 className="display text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white leading-[1.06]">
+							Built for teams
+							<br className="hidden sm:inline" />
+							that never stop
+							<span className="animated-gradient bg-gradient-to-r from-cyan-400 via-teal-300 to-emerald-400 bg-clip-text text-transparent drop-shadow-sm">
+								{" "}
+								moving.
+							</span>
 						</h1>
-						<p className="onest hero-desc mt-6 text-lg text-slate-500 leading-relaxed max-w-lg">
-							{PRODUCT_NAME} is the board for teams who'd rather ship than sit
-							in status meetings. Drag a ticket, and the whole workspace updates
-							before you let go of the mouse.
+
+						<p className="onest mt-6 text-base sm:text-lg text-slate-300 leading-relaxed font-normal max-w-2xl mx-auto">
+							From sprint planning to deployment, Flux keeps every task, update,
+							and conversation perfectly synchronized.{" "}
 						</p>
-						<div className="onest hero-actions mt-9 flex flex-wrap items-center gap-4">
+
+						<div className="mt-8 flex flex-wrap items-center justify-center gap-4">
 							<button
 								onClick={onGetStarted}
-								className={`group inline-flex items-center gap-2 rounded-full bg-teal-500 hover:bg-teal-600 px-5 py-3 text-sm font-medium text-white shadow-sm transition duration-300 ease-premium hover:shadow-lg hover:shadow-teal-500/30 hover:-translate-y-0.5 ${FOCUS_RING}`}
+								className={`group inline-flex items-center gap-2.5 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 px-7 py-4 text-base font-semibold text-white shadow-xl shadow-cyan-500/20 transition-all duration-300 ease-out hover:shadow-cyan-500/35 hover:-translate-y-0.5 ${FOCUS_RING}`}
 							>
-								Create a workspace
-								<ArrowRight className="h-4 w-4 transition-transform duration-300 ease-premium group-hover:translate-x-0.5" />
+								<span>Start Building</span>
+								<ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
 							</button>
+
 							<a
-								href="#features"
-								className={`text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors rounded-md px-3 py-2 ${FOCUS_RING}`}
+								href="#workflow"
+								className={`inline-flex items-center gap-2 rounded-2xl border border-slate-800 bg-slate-900/80 hover:bg-slate-800 px-6 py-4 text-sm font-semibold text-slate-300 hover:text-white transition-all duration-200 backdrop-blur-md ${FOCUS_RING}`}
 							>
-								See how it works
+								<span>Take the Tour</span>
 							</a>
 						</div>
-					</div>
 
-					<div className="hero-image relative hidden lg:block">
-						{/* 🚀 PERF: Add width/height to prevent layout shift & fetchpriority for faster LCP */}
-						<img
-							src="/images/hero.png"
-							alt=""
-							className="w-full h-auto rounded-2xl"
-							width={600}
-							height={450}
-							fetchpriority="high"
-						/>
+						<div className="mt-10 flex flex-wrap items-center justify-center gap-6 text-xs font-mono text-slate-400">
+							<div className="flex items-center gap-2">
+								<Check className="w-4 h-4 text-cyan-400" />
+								<span>&lt;20ms Realtime Sync</span>
+							</div>
+							<div className="flex items-center gap-2">
+								<Check className="w-4 h-4 text-cyan-400" />
+								<span>Full Keyboard Shortcuts (⌘K)</span>
+							</div>
+							<div className="flex items-center gap-2">
+								<Check className="w-4 h-4 text-cyan-400" />
+								<span>GitHub 2-Way Sync</span>
+							</div>
+						</div>
 					</div>
 				</div>
-
-				{/* 🚀 PERF: Added will-change to hint the browser about the GSAP parallax animation */}
-				<div
-					className="hero-board mt-16 sm:mt-20"
-					style={{ willChange: "transform" }}
-				>
-					<BoardPreview />
-				</div>
-			</div>
-		</section>
+			</section>
+		</>
 	);
 }
