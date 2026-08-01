@@ -1,5 +1,7 @@
 import { LayoutGrid } from "lucide-react";
 import { PRODUCT_NAME } from "../../data/constants";
+import Logo from "./Logo";
+import { NavLink } from "react-router-dom";
 
 export default function AuthShell({ children, panel }) {
 	return (
@@ -22,19 +24,7 @@ export default function AuthShell({ children, panel }) {
 				<div className="absolute inset-0 dot-grid opacity-[0.5] pointer-events-none" />
 				<div className="absolute inset-0 bg-gradient-to-b from-white via-white/70 to-stone-50 pointer-events-none" />
 
-				<div className="relative w-full max-w-md">
-					{/* Mobile logo */}
-					<div className="mb-8 flex items-center gap-2.5 lg:hidden">
-						<div className="h-8 w-8 rounded-lg bg-slate-900 flex items-center justify-center">
-							<LayoutGrid className="h-4 w-4 text-white" strokeWidth={2.5} />
-						</div>
-						<span className="font-display text-[17.5px] font-semibold tracking-tight text-slate-900">
-							{PRODUCT_NAME}
-						</span>
-					</div>
-
-					{children}
-				</div>
+				<div className="relative w-full max-w-md">{children}</div>
 			</main>
 		</div>
 	);

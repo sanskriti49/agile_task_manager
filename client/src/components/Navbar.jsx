@@ -25,30 +25,30 @@ export default function Navbar({ onGetStarted }) {
 	];
 
 	const handleNavClick = (e, path, hash) => {
-    e.preventDefault();
-    
-    if (location.pathname === path) {
-        // Already on the correct page, just scroll and update URL hash
-        const el = document.getElementById(hash);
-        if (el) {
-            el.scrollIntoView({ behavior: "smooth" });
-            // Update the URL without jumping or reloading
-            window.history.replaceState(null, "", `#${hash}`);
-        }
-    } else {
-        // Navigate to the landing page first
-        navigate(path);
-        
-        // Wait 500ms for the heavy landing page components to mount
-        setTimeout(() => {
-            const el = document.getElementById(hash);
-            if (el) {
-                el.scrollIntoView({ behavior: "smooth" });
-                window.history.replaceState(null, "", `#${hash}`);
-            }
-        }, 500);
-    }
-};
+		e.preventDefault();
+
+		if (location.pathname === path) {
+			// Already on the correct page, just scroll and update URL hash
+			const el = document.getElementById(hash);
+			if (el) {
+				el.scrollIntoView({ behavior: "smooth" });
+				// Update the URL without jumping or reloading
+				window.history.replaceState(null, "", `#${hash}`);
+			}
+		} else {
+			// Navigate to the landing page first
+			navigate(path);
+
+			// Wait 500ms for the heavy landing page components to mount
+			setTimeout(() => {
+				const el = document.getElementById(hash);
+				if (el) {
+					el.scrollIntoView({ behavior: "smooth" });
+					window.history.replaceState(null, "", `#${hash}`);
+				}
+			}, 500);
+		}
+	};
 
 	return (
 		<header
@@ -104,8 +104,8 @@ export default function Navbar({ onGetStarted }) {
 					>
 						Log in
 					</NavLink>
-					<button
-						onClick={onGetStarted}
+					<NavLink
+						to="/signup"
 						className={`group inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition duration-300 ease-premium ${FOCUS_RING} ${
 							isScrolled
 								? "bg-slate-900 hover:bg-teal-500 text-white hover:shadow-lg hover:shadow-teal-500/30"
@@ -114,7 +114,7 @@ export default function Navbar({ onGetStarted }) {
 					>
 						Start free
 						<ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 ease-premium group-hover:translate-x-0.5" />
-					</button>
+					</NavLink>
 				</div>
 			</div>
 		</header>

@@ -1,6 +1,7 @@
-// src/pages/AuthPages.jsx
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { GoogleLogin } from "@react-oauth/google";
+import { useAuthStore } from "../store/useAuthStore";
 import {
 	ArrowRight,
 	Mail,
@@ -13,13 +14,11 @@ import {
 } from "lucide-react";
 import AuthShell from "../components/ui/AuthShell";
 import BrandPanel from "../components/ui/BrandPanel";
+import AuthTermsNotice from "../components/AuthTermsNotice";
+import LegalModal from "../components/modals/LegalModal";
 
 const FOCUS_RING =
 	"focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2";
-
-/* ------------------------------------------------------------------ */
-/*  Shared atoms                                                      */
-/* ------------------------------------------------------------------ */
 
 function FieldLabel({ children }) {
 	return (
@@ -140,32 +139,71 @@ function scorePassword(pw = "") {
 }
 
 function SocialButtons() {
+	const navigate = useNavigate();
+	const setAuth = useAuthStore((state) => state.setAuth);
+	const [error, setError] = useState(null);
+
+	const handleGoogleSuccess = async (credentialResponse) => {
+		try {
+			setError(null);
+			const res = await fetch("http://localhost:500/api/auth/google", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ token: credentialResponse.credential }),
+			});
+			const data = await res.json();
+			if (res.ok) {
+				setAuth(data.user, data.token);
+				navigate("/dashboard");
+			} else {
+				setError(data.message || "Google authentication failed");
+			}
+		} catch (err) {
+			console.error("Network error during Google OAuth:", err);
+			setError("Server connection failed. Please try again.");
+		}
+	};
 	return (
-		<div className="grid grid-cols-2 gap-3">
-			<button
-				type="button"
-				className={`flex items-center justify-center gap-2 rounded-lg border border-stone-200 bg-white px-3 py-2.5 text-sm font-medium text-stone-700 transition-colors hover:border-stone-300 hover:bg-stone-50 ${FOCUS_RING}`}
-			>
-				<svg className="h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
-					<path
-						fill="#4285F4"
-						d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1Z"
-					/>
-					<path
-						fill="#34A853"
-						d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23Z"
-					/>
-					<path
-						fill="#FBBC05"
-						d="M5.84 14.1a6.6 6.6 0 0 1 0-4.2V7.06H2.18a11 11 0 0 0 0 9.88l3.66-2.84Z"
-					/>
-					<path
-						fill="#EA4335"
-						d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1A11 11 0 0 0 2.18 7.06l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38Z"
-					/>
-				</svg>
-				Google
-			</button>
+		// <div className="grid grid-cols-2 gap-3">
+		// 	<button
+		// 		type="button"
+		// 		className={`flex items-center justify-center gap-2 rounded-lg border border-stone-200 bg-white px-3 py-2.5 text-sm font-medium text-stone-700 transition-colors hover:border-stone-300 hover:bg-stone-50 ${FOCUS_RING}`}
+		// 	>
+		// 		<svg className="h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
+		// 			<path
+		// 				fill="#4285F4"
+		// 				d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1Z"
+		// 			/>
+		// 			<path
+		// 				fill="#34A853"
+		// 				d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23Z"
+		// 			/>
+		// 			<path
+		// 				fill="#FBBC05"
+		// 				d="M5.84 14.1a6.6 6.6 0 0 1 0-4.2V7.06H2.18a11 11 0 0 0 0 9.88l3.66-2.84Z"
+		// 			/>
+		// 			<path
+		// 				fill="#EA4335"
+		// 				d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1A11 11 0 0 0 2.18 7.06l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38Z"
+		// 			/>
+		// 		</svg>
+		// 		Google
+		// 	</button>
+		// </div>
+		<div className="flex flex-col items-center gap-2">
+			{error && (
+				<p className="text-xs font-medium text-rose-600 mb-1">{error}</p>
+			)}
+			<div className="w-full flex justify-center">
+				<GoogleLogin
+					onSuccess={handleGoogleSuccess}
+					onError={() => setError("Google Login Failed")}
+					theme="outline"
+					size="large"
+					shape="pill"
+					width="100%"
+				/>
+			</div>
 		</div>
 	);
 }
@@ -182,20 +220,43 @@ function Divider() {
 	);
 }
 
-/* ------------------------------------------------------------------ */
-/*  Login page                                                        */
-/* ------------------------------------------------------------------ */
-
 export function LoginPage() {
 	const navigate = useNavigate();
+	const setAuth = useAuthStore((state) => state.setAuth);
+
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [remember, setRemember] = useState(true);
 
-	function onSubmit(e) {
+	const [loading, setLoading] = useState(false);
+	const [error, setError] = useState("");
+
+	async function onSubmit(e) {
 		e.preventDefault();
-		// TODO: wire to auth store
-		navigate("/dashboard");
+		setError("");
+		setLoading(true);
+
+		try {
+			const res = await fetch("http://localhost:5000/api/auth/login", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ email, password }),
+			});
+
+			const data = await res.json();
+
+			if (res.ok) {
+				setAuth(data.user, data.token);
+				navigate("/dashboard");
+			} else {
+				setError(data.message || "Invalid credentials");
+			}
+		} catch (err) {
+			console.error("Login error:", err);
+			setError("Unable to connect to server. Please try again.");
+		} finally {
+			setLoading(false);
+		}
 	}
 
 	return (
@@ -213,7 +274,7 @@ export function LoginPage() {
 			<h1 className="font-display mt-2 text-3xl font-semibold tracking-tight text-stone-900">
 				Reconnect to the flow.
 			</h1>
-			<p className="mt-1.5 text-sm text-stone-500">
+			<p className="text-stone-600 mt-1.5 text-sm onest">
 				New here?{" "}
 				<Link
 					to="/signup"
@@ -248,7 +309,7 @@ export function LoginPage() {
 				<div className="flex items-center justify-between pt-1">
 					<label
 						htmlFor="remember"
-						className={`flex items-center gap-2 text-sm text-stone-600 ${FOCUS_RING} rounded cursor-pointer`}
+						className={`display flex items-center gap-2 text-sm text-stone-600 ${FOCUS_RING} rounded cursor-pointer`}
 					>
 						<span
 							className={`flex h-4 w-4 items-center justify-center rounded border transition-colors ${
@@ -286,7 +347,7 @@ export function LoginPage() {
 				</div>
 			</div>
 
-			<p className="font-mono-ui mt-8 text-center text-[11px] text-stone-400">
+			{/* <p className="font-mono-ui mt-8 text-center text-[11px] text-stone-400">
 				By signing in you agree to our{" "}
 				<a href="#" className="text-stone-500 hover:text-stone-700">
 					Terms
@@ -296,31 +357,72 @@ export function LoginPage() {
 					Privacy Policy
 				</a>
 				.
-			</p>
+			</p> */}
+			<AuthTermsNotice mode="signin" useModal={true} className="mt-3" />
 		</AuthShell>
 	);
 }
 
-/* ------------------------------------------------------------------ */
-/*  Signup page                                                       */
-/* ------------------------------------------------------------------ */
-
 export function SignupPage() {
 	const navigate = useNavigate();
+	const setAuth = useAuthStore((state) => state.setAuth);
+
 	const [name, setName] = useState("");
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [agree, setAgree] = useState(false);
 
+	const [loading, setLoading] = useState(false);
+	const [error, setError] = useState("");
+
+	const [modalOpen, setModalOpen] = useState(false);
+	const [modalTab, setModalTab] = useState("terms");
+
 	const score = useMemo(() => scorePassword(password), [password]);
 	const strengthLabel =
 		score < 34 ? "Weak" : score < 67 ? "Okay" : score === 0 ? "" : "Strong";
 
-	function onSubmit(e) {
+	const openTerms = (e) => {
+		e.preventDefault();
+		e.stopPropagation();
+		setModalTab("terms");
+		setModalOpen(true);
+	};
+	const openPrivacy = (e) => {
+		e.preventDefault();
+		e.stopPropagation();
+		setModalTab("privacy");
+		setModalOpen(true);
+	};
+
+	async function onSubmit(e) {
 		e.preventDefault();
 		if (!agree) return;
-		// TODO: wire to auth store
-		navigate("/dashboard");
+
+		setError("");
+		setLoading(true);
+
+		try {
+			const res = await fetch("http://localhost:5000/api/auth/signup", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ name, email, password }),
+			});
+
+			const data = await res.json();
+
+			if (res.ok) {
+				setAuth(data.user, data.token);
+				navigate("/dashboard");
+			} else {
+				setError(data.message || "Signup failed");
+			}
+		} catch (err) {
+			console.error("Signup error:", err);
+			setError("Unable to connect to server. Please try again.");
+		} finally {
+			setLoading(false);
+		}
 	}
 
 	return (
@@ -339,7 +441,7 @@ export function SignupPage() {
 			<h1 className="font-display mt-2 text-3xl font-semibold tracking-tight text-stone-900">
 				Spin up your kanban board.
 			</h1>
-			<p className="mt-1.5 text-sm text-stone-500">
+			<p className="mt-1.5 text-sm text-stone-600 onest">
 				Already in the network?{" "}
 				<Link
 					to="/login"
@@ -421,37 +523,37 @@ export function SignupPage() {
 						checked={agree}
 						onChange={(e) => setAgree(e.target.checked)}
 					/>
-					<span>
+					<span className="onest text-stone-600 ">
 						I agree to the{" "}
-						<a
-							href="#"
-							className="font-medium text-stone-800 hover:text-teal-700"
-							onClick={(e) => e.stopPropagation()}
+						<button
+							type="button"
+							onClick={openTerms}
+							className="font-medium text-stone-800 hover:text-teal-600 underline underline-offset-2"
 						>
 							Terms of Service
-						</a>{" "}
+						</button>{" "}
 						and{" "}
-						<a
-							href="#"
-							className="font-medium text-stone-800 hover:text-teal-700"
-							onClick={(e) => e.stopPropagation()}
+						<button
+							type="button"
+							onClick={openPrivacy}
+							className="font-medium text-stone-800 hover:text-teal-600 underline underline-offset-2"
 						>
 							Privacy Policy
-						</a>
+						</button>
 						.
 					</span>
 				</label>
 
 				<button
 					type="submit"
-					disabled={!agree}
+					disabled={!agree || loading}
 					className={`group mt-2 flex w-full items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-medium text-white transition duration-300 ease-premium ${
 						agree
 							? "bg-teal-600 hover:-translate-y-0.5 hover:bg-teal-700 hover:shadow-lg hover:shadow-teal-500/30"
 							: "cursor-not-allowed bg-stone-300"
 					} ${FOCUS_RING}`}
 				>
-					Create account
+					{loading ? "Creating account..." : "Create account"}
 					<ArrowRight className="h-4 w-4 transition-transform duration-300 ease-premium group-hover:translate-x-0.5" />
 				</button>
 			</form>
@@ -462,6 +564,14 @@ export function SignupPage() {
 					<SocialButtons />
 				</div>
 			</div>
+
+			<AuthTermsNotice mode="signup" useModal={true} className="mt-6" />
+
+			<LegalModal
+				isOpen={modalOpen}
+				onClose={() => setModalOpen(false)}
+				initialTab={modalTab}
+			/>
 
 			<p className="font-mono-ui mt-8 text-center text-[11px] text-stone-400">
 				Free for teams of up to five · No credit card required

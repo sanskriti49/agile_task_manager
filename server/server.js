@@ -7,11 +7,15 @@ require("dotenv").config();
 const { pool, ensureUUIDExtension } = require("./config/db");
 const connectMongo = require("./config/mongo");
 
+const authRoutes = require("./routes/auth");
+
 const app = express();
 const server = http.createServer(app);
 
 app.use(cors());
 app.use(express.json());
+
+app.use("/api/auth", authRoutes);
 
 const startServer = async () => {
 	await ensureUUIDExtension();

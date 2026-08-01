@@ -2,7 +2,8 @@
 
 import { LayoutGrid } from "lucide-react";
 import { PRODUCT_NAME } from "../../data/constants";
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
+import Logo from "./Logo";
 
 function MiniBoardPreview() {
 	const cols = [
@@ -104,22 +105,16 @@ export default function BrandPanel({ headline, sub }) {
 			<div className="absolute -right-20 top-10 h-72 w-72 rounded-full bg-teal-500/20 blur-3xl" />
 			<div className="absolute -left-20 bottom-0 h-72 w-72 rounded-full bg-teal-700/10 blur-3xl" />
 
-			{/* 1. Logo — always at the top */}
-			<Link to="/" className="relative flex shrink-0 items-center gap-2.5">
-				<div className="h-8 w-8 rounded-lg bg-teal-500 flex items-center justify-center">
-					<LayoutGrid className="h-4 w-4 text-white" strokeWidth={2.5} />
-				</div>
-				<span className="display text-[17.5px] font-semibold text-white">
-					{PRODUCT_NAME}
-				</span>
-			</Link>
-
-			{/* 2. Middle — pinned right below the logo with mt-12, flex-1 pushes footer down */}
+			<Logo
+				to="/"
+				showText={true}
+				className="w-7 h-7 transition-transform duration-300 group-hover:scale-110"
+			/>
 			<div className="relative mt-12 flex-1">
-				<h2 className="onest text-3xl font-semibold leading-tight tracking-tight text-white">
+				<h2 className="display text-3xl font-semibold text-white">
 					{headline}
 				</h2>
-				<p className="onest mt-3 max-w-sm text-sm leading-relaxed text-slate-400">
+				<p className="inter mt-3 max-w-sm text-sm leading-relaxed text-slate-400">
 					{sub}
 				</p>
 				<div className="mt-7">

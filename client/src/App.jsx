@@ -1,17 +1,19 @@
-import React from "react";
 import {
 	createBrowserRouter,
 	RouterProvider,
 	Navigate,
 } from "react-router-dom";
+import { GoogleOAuthProvider } from "@react-oauth/google";
+import { Toaster } from "sonner";
 import { useAuthStore } from "./store/useAuthStore";
 import LandingPage from "./pages/LandingPage";
 import WorkspacesDashboard from "./pages/WorkspacesDashboard";
 import MainLayout from "./layouts/MainLayout";
 import Board from "./components/board/Board";
 import { useBoardData } from "./hooks/useBoardData";
-import AuthPages, { LoginPage, SignupPage } from "./pages/AuthPages";
-import RootLayout from "./layouts/RootLayout"; // <-- Import the new layout
+import { LoginPage, SignupPage } from "./pages/AuthPages";
+import RootLayout from "./layouts/RootLayout";
+import LegalPage from "./pages/LegalPage";
 
 function ProtectedRoute({ children }) {
 	const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -23,7 +25,6 @@ function createAppRouter(boardData) {
 	return createBrowserRouter(
 		[
 			{
-				// Wrap everything in RootLayout so GSAP handles all transitions
 				element: <RootLayout />,
 				children: [
 					{
@@ -37,6 +38,15 @@ function createAppRouter(boardData) {
 					{
 						path: "/signup",
 						element: <SignupPage />,
+					},
+					// 👈 Added Legal Routes
+					{
+						path: "/terms",
+						element: <LegalPage defaultTab="terms" />,
+					},
+					{
+						path: "/privacy",
+						element: <LegalPage defaultTab="privacy" />,
 					},
 					{
 						element: (
@@ -75,5 +85,21 @@ export default function App() {
 	const boardData = useBoardData();
 	const router = createAppRouter(boardData);
 
-	return <RouterProvider router={router} />;
+	return (
+		<GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+			<Toaster
+				position="top-right"
+				richColors
+				closeButton
+				toastOptions={{
+					style: {
+						borderRadius: "12px",
+						fontFamily: "var(--font-mono-ui, monospace)",
+						fontSize: "13px",
+					},
+				}}
+			/>
+			<RouterProvider router={router} />
+		</GoogleOAuthProvider>
+	);
 }
