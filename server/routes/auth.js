@@ -7,8 +7,7 @@ const { OAuth2Client } = require("google-auth-library");
 const { pool } = require("../config/db");
 
 const router = express.Router();
-const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-
+const googleClient = new OAuth2Client();
 /* ------------------------------------------------------------------ */
 /* 1. GOOGLE OAUTH LOGIN/SIGNUP                                       */
 /* Endpoint: POST /api/auth/google                                    */

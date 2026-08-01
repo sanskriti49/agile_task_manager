@@ -16,6 +16,7 @@ import AuthShell from "../components/ui/AuthShell";
 import BrandPanel from "../components/ui/BrandPanel";
 import AuthTermsNotice from "../components/AuthTermsNotice";
 import LegalModal from "../components/modals/LegalModal";
+import { toast } from "sonner";
 
 const FOCUS_RING =
 	"focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2";
@@ -146,7 +147,7 @@ function SocialButtons() {
 	const handleGoogleSuccess = async (credentialResponse) => {
 		try {
 			setError(null);
-			const res = await fetch("http://localhost:500/api/auth/google", {
+			const res = await fetch("http://localhost:5000/api/auth/google", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({ token: credentialResponse.credential }),
@@ -156,11 +157,11 @@ function SocialButtons() {
 				setAuth(data.user, data.token);
 				navigate("/dashboard");
 			} else {
-				setError(data.message || "Google authentication failed");
+				toast.error(data.message || "Google authentication failed");
 			}
 		} catch (err) {
 			console.error("Network error during Google OAuth:", err);
-			setError("Server connection failed. Please try again.");
+			toast.error("Server connection failed. Please try again.");
 		}
 	};
 	return (
@@ -201,7 +202,7 @@ function SocialButtons() {
 					theme="outline"
 					size="large"
 					shape="pill"
-					width="100%"
+					//			width="100%"
 				/>
 			</div>
 		</div>
