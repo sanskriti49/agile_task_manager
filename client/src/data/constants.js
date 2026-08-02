@@ -82,37 +82,92 @@ export const COLUMNS = [
 	},
 ];
 
+export const COLUMN_DEFAULTS = {
+	todo: { label: "To Do", dot: "bg-slate-400" },
+	in_progress: { label: "In Progress", dot: "bg-amber-400" },
+	review: { label: "In Review", dot: "bg-indigo-400" },
+	done: { label: "Done", dot: "bg-emerald-400" },
+};
+
+// const PRIORITIES = [
+// 	{ id: "low", label: "Low", level: 1, color: "text-sky-500" },
+// 	{ id: "medium", label: "Medium", level: 2, color: "text-amber-500" },
+// 	{ id: "high", label: "High", level: 3, color: "text-rose-500" },
+// ];
+
 export const PRIORITY = {
 	high: {
 		label: "High",
+		level: 1,
 		chip: "bg-rose-50 text-rose-700 border-rose-200",
 		border: "border-rose-500",
 		dot: "bg-rose-500",
 	},
 	medium: {
 		label: "Medium",
+		level: 1,
 		chip: "bg-amber-50 text-amber-700 border-amber-200",
 		border: "border-amber-400",
 		dot: "bg-amber-400",
 	},
 	low: {
 		label: "Low",
+		level: 1,
 		chip: "bg-sky-50 text-sky-700 border-sky-200",
 		border: "border-sky-400",
 		dot: "bg-sky-400",
 	},
 };
 
-export const PEOPLE = {
-	"Aria Chen": { initials: "AC", color: "bg-violet-500" },
-	"Rohan Mehta": { initials: "RM", color: "bg-sky-500" },
-	"Priya Nair": { initials: "PN", color: "bg-emerald-500" },
-	"Sanskriti Gupta": { initials: "SG", color: "bg-indigo-500" },
-};
-
 export const CURRENT_USER = "Sanskriti Gupta";
 
-export const ONLINE_NOW = new Set(["Aria Chen", "Priya Nair"]);
+export const initialActivity = [
+	{
+		id: "a1",
+		type: "moved",
+		ticketId: "ENG-105",
+		ticketTitle: "Build checkout API",
+		actor: "Sanskriti Gupta",
+		detail: "To Do → In Progress",
+		time: "2m ago",
+	},
+	{
+		id: "a2",
+		type: "commented",
+		ticketId: "ENG-105",
+		ticketTitle: "Build checkout API",
+		actor: "Aria Chen",
+		detail: "Added the edge-case list to the ticket description.",
+		time: "40m ago",
+	},
+	{
+		id: "a3",
+		type: "commented",
+		ticketId: "ENG-104",
+		ticketTitle: "Create product API",
+		actor: "Sanskriti Gupta",
+		detail: "Let's version this under /api/v1 from the start.",
+		time: "6h ago",
+	},
+	{
+		id: "a4",
+		type: "created",
+		ticketId: "ENG-104",
+		ticketTitle: "Create product API",
+		actor: "Rohan Mehta",
+		detail: "Created the issue",
+		time: "1d ago",
+	},
+	{
+		id: "a5",
+		type: "moved",
+		ticketId: "ENG-108",
+		ticketTitle: "Deploy staging environment",
+		actor: "Priya Nair",
+		detail: "In Progress → Done",
+		time: "4d ago",
+	},
+];
 
 export const initialTickets = [
 	{
@@ -239,54 +294,6 @@ export const initialTickets = [
 		due: "Jul 20",
 		description: "CI pipeline deploys main branch to staging on every merge.",
 		comments: [],
-	},
-];
-
-export const initialActivity = [
-	{
-		id: "a1",
-		type: "moved",
-		ticketId: "ENG-105",
-		ticketTitle: "Build checkout API",
-		actor: "Sanskriti Gupta",
-		detail: "To Do → In Progress",
-		time: "2m ago",
-	},
-	{
-		id: "a2",
-		type: "commented",
-		ticketId: "ENG-105",
-		ticketTitle: "Build checkout API",
-		actor: "Aria Chen",
-		detail: "Added the edge-case list to the ticket description.",
-		time: "40m ago",
-	},
-	{
-		id: "a3",
-		type: "commented",
-		ticketId: "ENG-104",
-		ticketTitle: "Create product API",
-		actor: "Sanskriti Gupta",
-		detail: "Let's version this under /api/v1 from the start.",
-		time: "6h ago",
-	},
-	{
-		id: "a4",
-		type: "created",
-		ticketId: "ENG-104",
-		ticketTitle: "Create product API",
-		actor: "Rohan Mehta",
-		detail: "Created the issue",
-		time: "1d ago",
-	},
-	{
-		id: "a5",
-		type: "moved",
-		ticketId: "ENG-108",
-		ticketTitle: "Deploy staging environment",
-		actor: "Priya Nair",
-		detail: "In Progress → Done",
-		time: "4d ago",
 	},
 ];
 

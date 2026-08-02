@@ -1,5 +1,5 @@
 import React from "react";
-import { PEOPLE, ONLINE_NOW } from "../../data/constants";
+import { PEOPLE, ONLINE_NOW } from "../../data/people";
 
 // Map flat colors from constants to rich, premium gradients
 const GRADIENT_MAP = {

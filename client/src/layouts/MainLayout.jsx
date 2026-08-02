@@ -2,35 +2,44 @@ import React, { useRef, useEffect } from "react";
 import { useLocation, useOutlet } from "react-router-dom";
 import gsap from "gsap";
 import Sidebar from "../components/layout/Sidebar";
-import Topbar from "../components/layout/Topbar";
 import ActivityDrawer from "../components/drawers/ActivityDrawer";
 import TicketDetailPanel from "../components/drawers/TicketDetailPanel";
+import CreateWorkspaceModal from "../components/modals/CreateWorkspaceModal";
+import NewTicketModal from "../components/modals/NewTicketModal"; // 👈 Added missing Modal import
+import { useWorkspaceStore } from "../store/useWorkspaceStore";
 
-export default function MainLayout({ boardData }) {
-	const { activity, activityOpen, selected, setActivityOpen, setSelectedId } =
-		boardData;
-
+export default function MainLayout() {
 	const location = useLocation();
 	const outlet = useOutlet();
 	const pageRef = useRef(null);
 	const isFirstRender = useRef(true);
 
+	// Subscribe directly to Zustand Store
+	const activityLogs = useWorkspaceStore((state) => state.activityLogs);
+	const activityOpen = useWorkspaceStore((state) => state.activityOpen);
+	const setActivityOpen = useWorkspaceStore((state) => state.setActivityOpen);
+	const selectedTicket = useWorkspaceStore((state) => state.selectedTicket);
+	const setSelectedTicket = useWorkspaceStore(
+		(state) => state.setSelectedTicket,
+	);
+
+	const isCreateWorkspaceModalOpen = useWorkspaceStore(
+		(state) => state.isCreateWorkspaceModalOpen,
+	);
+	const setIsCreateWorkspaceModalOpen = useWorkspaceStore(
+		(state) => state.setIsCreateWorkspaceModalOpen,
+	);
+
 	useEffect(() => {
-		// Skip the very first render of MainLayout, because RootLayout
-		// is already handling the entrance animation for the whole page.
 		if (isFirstRender.current) {
 			isFirstRender.current = false;
 			return;
 		}
 
-		// Only animate if we are switching between dashboard inner-pages
 		if (pageRef.current) {
 			gsap.fromTo(
 				pageRef.current,
-				{
-					opacity: 0,
-					y: 12, // Slightly smaller slide for inner transitions
-				},
+				{ opacity: 0, y: 12 },
 				{
 					opacity: 1,
 					y: 0,
@@ -43,12 +52,8 @@ export default function MainLayout({ boardData }) {
 	}, [location.pathname]);
 
 	return (
-		<div
-			className="h-[100dvh] w-full flex overflow-hidden bg-slate-50 text-slate-800 min-h-0"
-			style={{ fontFamily: "'Inter', ui-sans-serif, system-ui, sans-serif" }}
-		>
+		<div className="h-[100dvh] w-full flex overflow-hidden bg-slate-50 text-slate-800 min-h-0">
 			<Sidebar />
-
 			<div className="flex-1 flex flex-col min-w-0 min-h-0 relative overflow-y-auto">
 				<div
 					ref={pageRef}
@@ -60,18 +65,24 @@ export default function MainLayout({ boardData }) {
 			</div>
 
 			<ActivityDrawer
-				activity={activity}
+				activity={activityLogs}
 				activityOpen={activityOpen}
 				setActivityOpen={setActivityOpen}
 			/>
-			<TicketDetailPanel boardData={boardData} />
+			<TicketDetailPanel />
 
-			{(activityOpen || selected) && (
+			<CreateWorkspaceModal
+				isOpen={isCreateWorkspaceModalOpen}
+				onClose={() => setIsCreateWorkspaceModalOpen(false)}
+			/>
+			<NewTicketModal />
+
+			{(activityOpen || selectedTicket) && (
 				<div
-					className="fixed inset-0 bg-slate-900/10 z-20 transition-opacity duration-300"
+					className="fixed inset-0 bg-slate-900/20 z-40 transition-opacity duration-300 backdrop-blur-xs"
 					onClick={() => {
 						setActivityOpen(false);
-						setSelectedId(null);
+						setSelectedTicket(null);
 					}}
 				/>
 			)}

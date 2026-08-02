@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { X, Rocket } from "lucide-react";
+import { X, Rocket, Loader2 } from "lucide-react";
 import { useWorkspaceStore } from "../../store/useWorkspaceStore";
 import { FOCUS_RING } from "../../data/constants";
 
 export default function CreateWorkspaceModal({ isOpen, onClose }) {
 	const [workspaceName, setWorkspaceName] = useState("");
 	const [description, setDescription] = useState("");
+	const [isSubmitting, setIsSubmitting] = useState(false);
 
 	const createWorkspace = useWorkspaceStore((state) => state.createWorkspace);
 
@@ -20,15 +21,25 @@ export default function CreateWorkspaceModal({ isOpen, onClose }) {
 
 	if (!isOpen) return null;
 
-	function handleSubmit(e) {
+	async function handleSubmit(e) {
 		e.preventDefault();
-		if (!workspaceName.trim()) return;
+		if (!workspaceName.trim() || isSubmitting) return;
+		//createWorkspace({ workspaceName, description });
+		setIsSubmitting(true);
+		try {
+			const result = await createWorkspace({ workspaceName, description });
+			if (result) {
+				setWorkspaceName("");
+				setDescription("");
+				onClose();
+			}
+		} finally {
+			setIsSubmitting(false);
+		}
 
-		createWorkspace({ workspaceName, description });
-
-		setWorkspaceName("");
-		setDescription("");
-		onClose();
+		// setWorkspaceName("");
+		// setDescription("");
+		// onClose();
 	}
 
 	return (
@@ -104,9 +115,14 @@ export default function CreateWorkspaceModal({ isOpen, onClose }) {
 						</button>
 						<button
 							type="submit"
-							className={`rounded-lg bg-teal-500 px-5 py-2 text-sm font-medium text-white shadow-sm transition-colors duration-150 hover:bg-teal-600 ${FOCUS_RING}`}
+							disabled={isSubmitting}
+							//className={`rounded-lg bg-teal-500 px-5 py-2 text-sm font-medium text-white shadow-sm transition-colors duration-150 hover:bg-teal-600 ${FOCUS_RING}`}
+							className={`flex items-center gap-2 rounded-lg bg-teal-500 px-5 py-2 text-sm font-medium text-white shadow-sm transition-colors duration-150 hover:bg-teal-600 ${FOCUS_RING} ${
+								isSubmitting ? "opacity-75 cursor-not-allowed" : ""
+							}`}
 						>
-							Create workspace
+							{isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
+							{isSubmitting ? "Creating..." : "Create workspace"}
 						</button>
 					</div>
 				</div>

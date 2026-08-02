@@ -8,8 +8,11 @@ import {
 	Bug,
 	Sparkles,
 	Wrench,
+	Loader2,
 } from "lucide-react";
-import { COLUMNS, PEOPLE, CURRENT_USER } from "../../data/constants";
+import { useWorkspaceStore } from "../../store/useWorkspaceStore";
+import { COLUMN_DEFAULTS } from "../../data/constants";
+import { avatarColor } from "../utils/avatarColor";
 
 const PRIORITIES = [
 	{ id: "low", label: "Low", level: 1, color: "text-sky-500" },
@@ -35,24 +38,6 @@ const TEMPLATES = [
 	},
 ];
 
-const AVATAR_COLORS = [
-	"bg-violet-500",
-	"bg-sky-500",
-	"bg-emerald-500",
-	"bg-amber-500",
-	"bg-rose-500",
-	"bg-indigo-500",
-	"bg-teal-500",
-	"bg-fuchsia-500",
-];
-
-function avatarColor(name = "") {
-	let hash = 0;
-	for (let i = 0; i < name.length; i++)
-		hash = name.charCodeAt(i) + ((hash << 5) - hash);
-	return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
-}
-
 function initials(name = "") {
 	return name
 		.split(" ")
@@ -72,10 +57,26 @@ function getDuePresets() {
 	tomorrow.setDate(today.getDate() + 1);
 	const nextWeek = new Date(today);
 	nextWeek.setDate(today.getDate() + 7);
+
 	return [
-		{ id: "today", label: "Today", value: formatShort(today) },
-		{ id: "tomorrow", label: "Tomorrow", value: formatShort(tomorrow) },
-		{ id: "nextweek", label: "Next week", value: formatShort(nextWeek) },
+		{
+			id: "today",
+			label: "Today",
+			display: formatShort(today),
+			value: today.toISOString(),
+		},
+		{
+			id: "tomorrow",
+			label: "Tomorrow",
+			display: formatShort(tomorrow),
+			value: tomorrow.toISOString(),
+		},
+		{
+			id: "nextweek",
+			label: "Next week",
+			display: formatShort(nextWeek),
+			value: nextWeek.toISOString(),
+		},
 	];
 }
 
@@ -110,17 +111,20 @@ function MetaButton({ active, onClick, children }) {
 		>
 			{children}
 			<ChevronDown
-				className={`h-3 w-3 opacity-40 transition-transform duration-200 ${active ? "rotate-180" : ""}`}
+				className={`h-3 w-3 opacity-40 transition-transform duration-200 ${
+					active ? "rotate-180" : ""
+				}`}
 			/>
 		</button>
 	);
 }
 
-// Changed to open upwards (bottom) so it doesn't overlap the modal footer
 function PopoverPanel({ children, width = "w-44", align = "left" }) {
 	return (
 		<div
-			className={`absolute ${align === "right" ? "right-0" : "left-0"} bottom-[calc(100%+6px)] ${width} max-h-56 overflow-auto bg-white rounded-lg border border-slate-200 shadow-xl p-1 z-30`}
+			className={`absolute ${
+				align === "right" ? "right-0" : "left-0"
+			} bottom-[calc(100%+6px)] ${width} max-h-56 overflow-auto bg-white rounded-lg border border-slate-200 shadow-xl p-1 z-30`}
 			style={{ animation: "popIn 0.15s cubic-bezier(0.16,1,0.3,1)" }}
 		>
 			{children}
@@ -150,31 +154,40 @@ function PopoverItem({ children, meta, selected, onClick }) {
 	);
 }
 
-export default function NewTicketModal({
-	newTicketCol,
-	setNewTicketCol,
-	handleCreateTicket,
-}) {
+export default function NewTicketModal() {
+	const newTicketCol = useWorkspaceStore((state) => state.newTicketCol);
+	const setNewTicketCol = useWorkspaceStore((state) => state.setNewTicketCol);
+	const createTicket = useWorkspaceStore((state) => state.createTicket);
+	const currentWorkspace = useWorkspaceStore((state) => state.currentWorkspace);
+
+	// Safe fallback function to prevent "setIsAiDecomposeOpen is not a function" error
+	const setIsAiDecomposeOpen = useWorkspaceStore(
+		(state) => state.setIsAiDecomposeOpen || (() => {}),
+	);
+
 	const [title, setTitle] = useState("");
 	const [description, setDescription] = useState("");
 	const [priority, setPriority] = useState("medium");
-	const [assignee, setAssignee] = useState(CURRENT_USER);
+	const [assignee, setAssignee] = useState("Unassigned");
 	const [due, setDue] = useState(null);
 	const [tags, setTags] = useState([]);
 	const [tagDraft, setTagDraft] = useState("");
 	const [openPopover, setOpenPopover] = useState(null);
 
+	const [isSubmitting, setIsSubmitting] = useState(false);
+
 	const titleRef = useRef(null);
 	const formRef = useRef(null);
 	const popoverRef = useRef(null);
 
-	// Reset the form fresh every time the modal opens for a (possibly new) column
+	const membersList = currentWorkspace?.members || [];
+
 	useEffect(() => {
 		if (!newTicketCol) return;
 		setTitle("");
 		setDescription("");
 		setPriority("medium");
-		setAssignee(CURRENT_USER);
+		setAssignee(membersList[0]?.name || "Unassigned");
 		setDue(null);
 		setTags([]);
 		setTagDraft("");
@@ -183,7 +196,6 @@ export default function NewTicketModal({
 		return () => cancelAnimationFrame(raf);
 	}, [newTicketCol]);
 
-	// Close any open property popover on outside click
 	useEffect(() => {
 		function onClick(e) {
 			if (popoverRef.current && !popoverRef.current.contains(e.target)) {
@@ -196,9 +208,14 @@ export default function NewTicketModal({
 
 	if (!newTicketCol) return null;
 
-	const col = COLUMNS.find((c) => c.id === newTicketCol);
-	const people = Object.keys(PEOPLE);
-	const activePriority = PRIORITIES.find((p) => p.id === priority);
+	const colMeta = COLUMN_DEFAULTS[newTicketCol] || {
+		label: newTicketCol.replace("_", " ").toUpperCase(),
+		dot: "bg-teal-500",
+	};
+
+	const activePriority =
+		PRIORITIES.find((p) => p.id === priority) || PRIORITIES[1];
+
 	const duePresets = getDuePresets();
 
 	function addTag() {
@@ -212,20 +229,53 @@ export default function NewTicketModal({
 	}
 
 	function applyTemplate(tpl) {
-		setTitle((t) => (t.startsWith(tpl.prefix) ? t : tpl.prefix + t));
+		setTitle((currentTitle) => {
+			let cleanTitle = currentTitle;
+			TEMPLATES.forEach((t) => {
+				if (cleanTitle.startsWith(t.prefix)) {
+					cleanTitle = cleanTitle.slice(t.prefix.length);
+				}
+			});
+
+			return tpl.prefix + cleanTitle;
+		});
+
 		setPriority(tpl.priority);
 		titleRef.current?.focus();
 	}
 
 	function handleKeyDown(e) {
-		if (e.key === "Escape" && openPopover) {
-			e.stopPropagation();
-			setOpenPopover(null);
-			return;
+		if (e.key === "Escape") {
+			if (openPopover) {
+				e.stopPropagation();
+				setOpenPopover(null);
+			} else {
+				setNewTicketCol(null);
+			}
 		}
 		if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
 			e.preventDefault();
 			formRef.current?.requestSubmit();
+		}
+	}
+
+	async function handleSubmit(e) {
+		e.preventDefault();
+		if (!title.trim() || isSubmitting) return;
+
+		setIsSubmitting(true);
+		try {
+			await createTicket({
+				title: title.trim(),
+				description,
+				status: newTicketCol,
+				priority,
+				tags,
+				due_date: due ? due.value : null, // Send ISO timestamp string to backend/PostgreSQL
+			});
+			setNewTicketCol(null);
+		} finally {
+			setIsSubmitting(false);
 		}
 	}
 
@@ -245,7 +295,7 @@ export default function NewTicketModal({
 			>
 				<form
 					ref={formRef}
-					onSubmit={handleCreateTicket}
+					onSubmit={handleSubmit}
 					className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md flex flex-col"
 					style={{ animation: "cardIn 0.22s cubic-bezier(0.16,1,0.3,1)" }}
 				>
@@ -253,17 +303,17 @@ export default function NewTicketModal({
 
 					<div className="p-5 pb-4">
 						<div className="flex items-center justify-between mb-3">
-							<div className="flex items-center gap-1.5 text-xs font-medium text-slate-500">
-								<span className={`h-1.5 w-1.5 rounded-full ${col?.dot}`} />
+							<div className="onest flex items-center gap-1.5 text-xs font-medium text-slate-500">
+								<span className={`h-1.5 w-1.5 rounded-full ${colMeta?.dot}`} />
 								New issue in{" "}
-								<span className="text-slate-700 font-semibold">
-									{col?.label}
+								<span className="display text-slate-700 font-semibold">
+									{colMeta?.label}
 								</span>
 							</div>
 							<button
 								type="button"
 								onClick={() => setNewTicketCol(null)}
-								className="p-1 rounded hover:bg-slate-100 text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300"
+								className="p-1 rounded hover:bg-slate-100 text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300"
 								aria-label="Cancel"
 							>
 								<X className="h-4 w-4" />
@@ -278,7 +328,7 @@ export default function NewTicketModal({
 										key={tpl.id}
 										type="button"
 										onClick={() => applyTemplate(tpl)}
-										className="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium text-slate-500 bg-slate-100 hover:bg-slate-200 hover:text-slate-700 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300"
+										className="display flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium text-slate-500 bg-slate-100 hover:bg-slate-200 hover:text-slate-700 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300"
 									>
 										<Icon className="h-3 w-3" /> {tpl.label}
 									</button>
@@ -286,22 +336,22 @@ export default function NewTicketModal({
 							})}
 						</div>
 
-						<div className="rounded-lg -mx-1 px-1 py-1 focus-within:ring-2 focus-within:ring-indigo-100 transition-shadow duration-150">
+						<div className="onest space-y-2 rounded-xl bg-slate-50/80 p-3.5 border border-slate-200/80 focus-within:border-teal-400 focus-within:bg-white focus-within:ring-2 focus-within:ring-teal-100 transition-all">
 							<input
 								ref={titleRef}
 								name="title"
 								value={title}
 								onChange={(e) => setTitle(e.target.value)}
-								placeholder="e.g. Fix pagination on orders table"
-								className="w-full text-[15px] font-medium text-slate-900 placeholder:text-slate-400 placeholder:font-normal outline-none"
+								placeholder="Issue title..."
+								className="w-full font-display text-base font-bold text-slate-900 placeholder:text-slate-400 outline-none"
 								required
 							/>
 							<textarea
 								value={description}
 								onChange={(e) => setDescription(e.target.value)}
-								placeholder="Add a description…"
-								rows={2}
-								className="w-full text-[13px] text-slate-600 placeholder:text-slate-400 outline-none resize-none leading-relaxed mt-1"
+								placeholder="Add a detailed description or sub-tasks..."
+								rows={3}
+								className="w-full font-mono-ui text-[13px] text-slate-600 placeholder:text-slate-400 outline-none resize-none leading-relaxed"
 							/>
 						</div>
 
@@ -310,7 +360,7 @@ export default function NewTicketModal({
 								{tags.map((t) => (
 									<span
 										key={t}
-										className="inline-flex items-center gap-1 pl-2 pr-1 py-0.5 rounded-full text-[11px] font-medium bg-indigo-50 text-indigo-600"
+										className="mono inline-flex items-center gap-1 pl-2 pr-1 py-0.5 rounded-full text-[11px] font-medium bg-indigo-50 text-indigo-600"
 									>
 										{t}
 										<button
@@ -328,8 +378,9 @@ export default function NewTicketModal({
 
 						<div
 							ref={popoverRef}
-							className="flex flex-wrap items-center gap-1.5 pt-3 mt-2 border-t border-slate-100"
+							className="onest flex flex-wrap items-center gap-2 pt-4 mt-3 border-t border-slate-100"
 						>
+							{/* Priority */}
 							<div className="relative">
 								<MetaButton
 									active={openPopover === "priority"}
@@ -343,7 +394,7 @@ export default function NewTicketModal({
 										level={activePriority.level}
 										className={`h-3 w-3.5 ${activePriority.color}`}
 									/>
-									{activePriority.label}
+									<span>{activePriority.label}</span>
 								</MetaButton>
 								{openPopover === "priority" && (
 									<PopoverPanel width="w-40">
@@ -360,13 +411,14 @@ export default function NewTicketModal({
 													level={p.level}
 													className={`h-3 w-3.5 ${p.color}`}
 												/>
-												{p.label}
+												<span>{p.label}</span>
 											</PopoverItem>
 										))}
 									</PopoverPanel>
 								)}
 							</div>
 
+							{/* Assignee */}
 							<div className="relative">
 								<MetaButton
 									active={openPopover === "assignee"}
@@ -377,35 +429,45 @@ export default function NewTicketModal({
 									}
 								>
 									<span
-										className={`h-4 w-4 rounded-full ${avatarColor(assignee)} text-white text-[9px] font-semibold flex items-center justify-center shrink-0`}
+										className={`h-4 w-4 rounded-full ${avatarColor(
+											assignee,
+										)} font-mono-ui text-[9px] font-bold text-white flex items-center justify-center shrink-0`}
 									>
 										{initials(assignee)}
 									</span>
-									<span className="max-w-[90px] truncate">{assignee}</span>
+									<span className="truncate max-w-[100px]">{assignee}</span>
 								</MetaButton>
 								{openPopover === "assignee" && (
-									<PopoverPanel width="w-44">
-										{people.map((p) => (
+									<PopoverPanel width="w-48">
+										{[
+											"Sanskriti Gupta",
+											"Aria Chen",
+											"Rohan Mehta",
+											"Priya Nair",
+										].map((name) => (
 											<PopoverItem
-												key={p}
-												selected={assignee === p}
+												key={name}
+												selected={assignee === name}
 												onClick={() => {
-													setAssignee(p);
+													setAssignee(name);
 													setOpenPopover(null);
 												}}
 											>
 												<span
-													className={`h-4 w-4 rounded-full ${avatarColor(p)} text-white text-[9px] font-semibold flex items-center justify-center shrink-0`}
+													className={`h-4 w-4 rounded-full ${avatarColor(
+														name,
+													)} font-mono-ui text-[9px] font-bold text-white flex items-center justify-center shrink-0`}
 												>
-													{initials(p)}
+													{initials(name)}
 												</span>
-												{p}
+												<span>{name}</span>
 											</PopoverItem>
 										))}
 									</PopoverPanel>
 								)}
 							</div>
 
+							{/* Due Date */}
 							<div className="relative">
 								<MetaButton
 									active={openPopover === "due"}
@@ -413,8 +475,8 @@ export default function NewTicketModal({
 										setOpenPopover((p) => (p === "due" ? null : "due"))
 									}
 								>
-									<Calendar className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-									{due ? due.label : "Due date"}
+									<Calendar className="h-3.5 w-3.5 text-slate-400" />
+									<span>{due ? due.label : "Due date"}</span>
 								</MetaButton>
 								{openPopover === "due" && (
 									<PopoverPanel width="w-44" align="right">
@@ -422,13 +484,12 @@ export default function NewTicketModal({
 											<PopoverItem
 												key={d.id}
 												selected={due?.id === d.id}
-												meta={d.value}
 												onClick={() => {
 													setDue(d);
 													setOpenPopover(null);
 												}}
 											>
-												{d.label}
+												<span>{d.label}</span>
 											</PopoverItem>
 										))}
 										{due && (
@@ -438,7 +499,7 @@ export default function NewTicketModal({
 													setDue(null);
 													setOpenPopover(null);
 												}}
-												className="w-full text-left px-2 py-1.5 rounded-md text-[12px] text-rose-500 hover:bg-rose-50 mt-0.5"
+												className="w-full text-left px-2.5 py-1.5 font-mono-ui text-xs font-semibold text-rose-500 hover:bg-rose-50 rounded-lg mt-1"
 											>
 												Clear date
 											</button>
@@ -447,6 +508,7 @@ export default function NewTicketModal({
 								)}
 							</div>
 
+							{/* Tag Input */}
 							<div className="relative">
 								<MetaButton
 									active={openPopover === "tags"}
@@ -454,11 +516,11 @@ export default function NewTicketModal({
 										setOpenPopover((p) => (p === "tags" ? null : "tags"))
 									}
 								>
-									<TagIcon className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-									Label
+									<TagIcon className="h-3.5 w-3.5 text-slate-400" />
+									<span>Add Label</span>
 								</MetaButton>
 								{openPopover === "tags" && (
-									<PopoverPanel width="w-48" align="right">
+									<PopoverPanel width="w-52" align="right">
 										<input
 											autoFocus
 											value={tagDraft}
@@ -469,16 +531,35 @@ export default function NewTicketModal({
 													addTag();
 												}
 											}}
-											placeholder="Type & press Enter"
-											className="w-full px-2 py-1.5 text-[12px] rounded-md bg-slate-100 outline-none focus:ring-2 focus:ring-indigo-200"
+											placeholder="Label name + Press Enter"
+											className="w-full font-mono-ui text-xs rounded-lg bg-slate-100 px-3 py-1.5 outline-none focus:ring-2 focus:ring-teal-200"
 										/>
 									</PopoverPanel>
 								)}
 							</div>
 						</div>
+
+						<div className="onest mt-4 flex items-center justify-between rounded-xl border border-indigo-100 bg-indigo-50/60 p-3">
+							<div className="flex items-center gap-2">
+								<Sparkles className="h-4 w-4 text-indigo-600 animate-pulse" />
+								<span className="font-mono-ui text-xs font-semibold text-indigo-950">
+									Need AI Sub-Task Breakdown?
+								</span>
+							</div>
+							<button
+								type="button"
+								onClick={() => {
+									setNewTicketCol(null);
+									setIsAiDecomposeOpen(true);
+								}}
+								className="display rounded-lg bg-indigo-600 px-3 py-1 font-mono-ui text-xs font-bold text-white hover:bg-indigo-700 transition-colors"
+							>
+								Use AI Copilot
+							</button>
+						</div>
 					</div>
 
-					<div className="flex items-center justify-between gap-3 px-5 py-3 bg-slate-50 border-t border-slate-100 rounded-b-2xl shrink-0">
+					<div className="onest flex items-center justify-between gap-3 px-5 py-3 bg-slate-50 border-t border-slate-100 rounded-b-2xl shrink-0">
 						<span className="hidden sm:flex items-center gap-1 text-[11px] text-slate-400">
 							<kbd className="px-1.5 py-0.5 rounded bg-white border border-slate-200 font-sans">
 								⌘
@@ -498,9 +579,13 @@ export default function NewTicketModal({
 							</button>
 							<button
 								type="submit"
-								className="px-4 py-1.5 rounded-lg brand-gradient text text-sm font-medium bg-teal-400/90 text-white ease-premium transition-all duration-150 shadow-sm shadow-indigo-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300"
+								disabled={isSubmitting}
+								className="flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-medium bg-teal-600 text-white hover:bg-teal-700 disabled:opacity-50"
 							>
-								Create issue
+								{isSubmitting && (
+									<Loader2 className="h-3.5 w-3.5 animate-spin" />
+								)}
+								{isSubmitting ? "Creating..." : "Create issue"}
 							</button>
 						</div>
 					</div>

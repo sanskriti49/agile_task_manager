@@ -9,7 +9,9 @@ const activityLogSchema = new mongoose.Schema(
 		},
 		taskId: {
 			type: String,
-			required: true,
+			required: false,
+			default: null,
+			index: true,
 		},
 		userId: {
 			type: String,
@@ -48,5 +50,7 @@ const activityLogSchema = new mongoose.Schema(
 		timestamps: true,
 	},
 );
+activityLogSchema.index({ projectId: 1, createdAt: -1 });
+//activityLogSchema.index({ createdAt: 1 }, { expireAfterSeconds: 90 * 24 * 60 * 60 });
 
 module.exports = mongoose.model("ActivityLog", activityLogSchema);

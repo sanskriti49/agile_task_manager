@@ -6,7 +6,7 @@ export default function Logo({
 	className = "w-7 h-7",
 	showText = true,
 	textClassName = "",
-	to = "/", // Natively defaults to "/"!
+	to = "/",
 	onClick,
 	...props
 }) {

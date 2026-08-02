@@ -2,175 +2,310 @@ import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
 	LayoutGrid,
+	CheckSquare,
+	BarChart3,
+	Sparkles,
+	History,
+	Users,
 	Settings,
 	Plus,
 	ChevronLeft,
 	FolderKanban,
+	ShieldCheck,
 } from "lucide-react";
-import SidebarIcon from "../ui/SidebarIcon";
-import Avatar from "../ui/Avatar";
-import { CURRENT_USER } from "../../data/constants";
-import CreateWorkspaceModal from "../modals/CreateWorkspaceModal";
 import { useWorkspaceStore } from "../../store/useWorkspaceStore";
+import { useAuthStore } from "../../store/useAuthStore";
+import Logo from "../ui/Logo";
 
-const PRODUCT_NAME = "Flux";
 const FOCUS_RING_DARK =
 	"focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950";
 
 export default function Sidebar() {
-	const [isExpanded, setIsExpanded] = useState(false);
-	const [isModalOpen, setIsModalOpen] = useState(false);
-	const location = useLocation();
+	const [isExpanded, setIsExpanded] = useState(true);
 
-	const workspaces = useWorkspaceStore((state) => state.workspaces);
+	const location = useLocation();
+	const user = useAuthStore((state) => state.user);
+
+	// Safe default arrays to prevent undefined filter crashes
+	const workspaces = useWorkspaceStore((state) => state.workspaces) || [];
+	const tickets = useWorkspaceStore((state) => state.tickets) || [];
+
+	const setIsCreateWorkspaceModalOpen = useWorkspaceStore(
+		(state) => state.setIsCreateWorkspaceModalOpen,
+	);
+	const setIsTimeTravelOpen = useWorkspaceStore(
+		(state) => state.setIsTimeTravelOpen,
+	);
+	const setIsAiDecomposeOpen = useWorkspaceStore(
+		(state) => state.setIsAiDecomposeOpen,
+	);
+
+	const currentUserFirstName = user?.name
+		? user.name.split(" ")[0]
+		: "Developer";
+	const myAssignedTicketsCount = tickets.filter(
+		(t) =>
+			(t.assignee && t.assignee.includes(currentUserFirstName)) ||
+			t.assigned_to === user?.id,
+	).length;
+
+	const mainNav = [
+		{
+			id: "dashboard",
+			label: "Dashboard",
+			icon: LayoutGrid,
+			path: "/dashboard",
+		},
+		{
+			id: "my-issues",
+			label: "My Issues",
+			icon: CheckSquare,
+			path: "/dashboard",
+			badge: myAssignedTicketsCount || 3,
+		},
+		{
+			id: "analytics",
+			label: "Sprint Analytics",
+			icon: BarChart3,
+			path: "/dashboard",
+		},
+	];
+
+	const innovationNav = [
+		{
+			id: "ai-copilot",
+			label: "AI Copilot",
+			icon: Sparkles,
+			action: () => setIsAiDecomposeOpen && setIsAiDecomposeOpen(true),
+			gradient: "text-amber-300",
+		},
+		{
+			id: "time-travel",
+			label: "Audit Replay",
+			icon: History,
+			action: () => setIsTimeTravelOpen && setIsTimeTravelOpen(true),
+			gradient: "text-teal-400",
+		},
+	];
 
 	return (
-		<>
-			<aside
-				className={`relative z-40 flex h-full shrink-0 flex-col gap-2 bg-slate-950 py-4 transition-[width] duration-300 ease-premium ${
-					isExpanded ? "w-64 items-stretch px-3" : "w-16 items-center px-0"
-				}`}
+		<aside
+			className={`relative z-40 flex h-full shrink-0 flex-col gap-2 border-r border-slate-800/80 bg-slate-950/95 py-4 backdrop-blur-xl transition-[width] duration-300 ease-in-out ${
+				isExpanded ? "w-64 px-3" : "w-16 items-center px-0"
+			}`}
+		>
+			{/* Brand Header */}
+			<div
+				className={`mb-3 flex items-center ${isExpanded ? "justify-between px-1" : "flex-col gap-2"}`}
 			>
-				<div
-					className={`mb-3 flex items-center ${isExpanded ? "justify-between px-1" : "flex-col gap-2"}`}
-				>
-					<Link
-						to="/dashboard"
-						aria-label={`${PRODUCT_NAME} home`}
-						className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-teal-500 transition-colors duration-200 ease-premium hover:bg-teal-400 ${FOCUS_RING_DARK}`}
-					>
-						<LayoutGrid className="h-4 w-4 text-white" strokeWidth={2.5} />
-					</Link>
-
+				<div className="flex items-center gap-2.5">
+					<Logo showText={false} />
 					{isExpanded && (
-						<span className="display flex-1 truncate px-2 text-[15px] font-semibold text-white">
-							{PRODUCT_NAME}
-						</span>
+						<div className="z-99 flex items-center gap-1.5">
+							<span
+								className={`text-xl font-extrabold tracking-wider uppercase transition-all duration-300`}
+								style={{
+									fontFamily: "'onest', system-ui, sans-serif",
+								}}
+							>
+								<span
+									className={`bg-clip-text text-transparent bg-gradient-to-r from-white via-teal-100 to-cyan-200`}
+								>
+									FLU
+								</span>
+								<span
+									className={`bg-clip-text text-transparent bg-gradient-to-r from-teal-400 via-cyan-300 to-indigo-400 group-hover:from-cyan-300 group-hover:to-teal-300`}
+								>
+									X
+								</span>
+							</span>
+						</div>
 					)}
-
-					<button
-						type="button"
-						onClick={() => setIsExpanded((v) => !v)}
-						aria-label={isExpanded ? "Collapse sidebar" : "Expand sidebar"}
-						className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-500 transition-colors duration-200 ease-premium hover:bg-slate-800 hover:text-slate-200 ${FOCUS_RING_DARK}`}
-					>
-						<ChevronLeft
-							className={`h-4 w-4 transition-transform duration-300 ease-premium ${isExpanded ? "" : "rotate-180"}`}
-						/>
-					</button>
 				</div>
 
 				<button
 					type="button"
-					onClick={() => setIsModalOpen(true)}
-					aria-label="New workspace"
-					className={`group relative mb-2 flex items-center gap-3 rounded-lg py-2.5 text-slate-300 ring-1 ring-slate-800 transition-colors duration-200 ease-premium hover:bg-slate-800 hover:text-white hover:ring-slate-700 ${FOCUS_RING_DARK} ${
-						isExpanded ? "w-full px-3" : "h-10 w-10 justify-center"
-					}`}
+					onClick={() => setIsExpanded((v) => !v)}
+					aria-label={isExpanded ? "Collapse Sidebar" : "Expand Sidebar"}
+					className={`flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-800 hover:text-white ${FOCUS_RING_DARK}`}
 				>
-					<Plus className="h-[18px] w-[18px] shrink-0" />
-					{isExpanded ? (
-						<span className="text-sm font-medium">New workspace</span>
-					) : (
-						<span className="pointer-events-none absolute left-full ml-3 whitespace-nowrap rounded-md bg-slate-900 px-2 py-1 text-[11px] font-medium text-white opacity-0 shadow-lg ring-1 ring-slate-800 transition-all duration-200 ease-premium -translate-x-2 group-hover:translate-x-0 group-hover:opacity-100 z-40">
-							New workspace
-						</span>
-					)}
+					<ChevronLeft
+						className={`h-4 w-4 transition-transform duration-300 ${isExpanded ? "" : "rotate-180"}`}
+					/>
 				</button>
+			</div>
 
-				<div className={`h-px bg-slate-800 ${isExpanded ? "w-full" : "w-8"}`} />
+			{/* New Workspace Trigger CTA */}
+			<button
+				type="button"
+				onClick={() =>
+					setIsCreateWorkspaceModalOpen && setIsCreateWorkspaceModalOpen(true)
+				}
+				className={`onest group relative mb-2 flex items-center gap-3 rounded-xl border border-teal-500/20 bg-gradient-to-r from-teal-500/10 to-emerald-500/10 py-2.5 font-display text-xs font-bold text-teal-300 transition-all hover:border-teal-500/40 hover:bg-teal-500/20 hover:text-white ${FOCUS_RING_DARK} ${
+					isExpanded ? "w-full px-3.5" : "h-10 w-10 justify-center"
+				}`}
+			>
+				<Plus className="h-4 w-4 shrink-0 transition-transform group-hover:rotate-90" />
+				{isExpanded ? (
+					<span>New Workspace</span>
+				) : (
+					<span className="pointer-events-none absolute left-full z-50 ml-3 hidden whitespace-nowrap rounded-md bg-slate-900 px-2.5 py-1 text-sm font-medium text-white shadow-xl ring-1 ring-slate-800 group-hover:block">
+						New Workspace
+					</span>
+				)}
+			</button>
 
-				<nav
-					className={`flex flex-col gap-1 ${isExpanded ? "w-full" : "items-center"}`}
-				>
-					<Link
-						to="/dashboard"
-						className={`flex items-center gap-3 rounded-lg py-2.5 text-slate-400 transition-colors duration-200 ease-premium hover:bg-slate-800 hover:text-white ${FOCUS_RING_DARK} ${
-							isExpanded ? "w-full px-3" : "h-10 w-10 justify-center"
-						} ${location.pathname === "/dashboard" ? "bg-slate-800 text-white" : ""}`}
-					>
-						<LayoutGrid className="h-[18px] w-[18px] shrink-0" />
-						{isExpanded && (
-							<span className="text-sm font-medium">Dashboard</span>
-						)}
-					</Link>
-				</nav>
+			<div
+				className={`h-px bg-slate-800/80 ${isExpanded ? "w-full" : "w-8"}`}
+			/>
 
+			{/* Core Navigation */}
+			<nav
+				className={`flex flex-col gap-1 ${isExpanded ? "w-full" : "items-center"}`}
+			>
+				{mainNav.map((item) => {
+					const Icon = item.icon;
+					const isActive =
+						location.pathname === item.path && item.id === "dashboard";
+					return (
+						<Link
+							key={item.id}
+							to={item.path}
+							className={`display group relative flex items-center gap-3 rounded-xl py-2.5 text-[13px] font-medium transition-all ${
+								isExpanded ? "w-full px-3.5" : "h-10 w-10 justify-center"
+							} ${
+								isActive
+									? "border-l-2 border-teal-400 bg-gradient-to-r from-teal-500/20 to-transparent text-teal-300"
+									: "text-slate-400 hover:bg-slate-800/60 hover:text-white"
+							}`}
+						>
+							<Icon className="h-4 w-4 shrink-0 transition-transform group-hover:scale-110" />
+							{isExpanded ? (
+								<div className="flex flex-1 items-center justify-between">
+									<span>{item.label}</span>
+									{item.badge !== undefined && (
+										<span className="rounded-full bg-slate-800 px-2 py-0.5 font-mono-ui text-[10px] font-bold text-slate-300">
+											{item.badge}
+										</span>
+									)}
+								</div>
+							) : (
+								<span className="pointer-events-none absolute left-full z-50 ml-3 hidden whitespace-nowrap rounded-md bg-slate-900 px-2.5 py-1 text-xs font-medium text-white shadow-xl ring-1 ring-slate-800 group-hover:block">
+									{item.label}
+								</span>
+							)}
+						</Link>
+					);
+				})}
+			</nav>
+
+			{/* Innovation Quick Triggers */}
+			<div
+				className={`h-px bg-slate-800/80 my-1 ${isExpanded ? "w-full" : "w-8"}`}
+			/>
+			{isExpanded && (
+				<span className="onest px-3.5 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+					AI & History Tools
+				</span>
+			)}
+			<div
+				className={`flex flex-col gap-1 ${isExpanded ? "w-full" : "items-center"}`}
+			>
+				{innovationNav.map((item) => {
+					const Icon = item.icon;
+					return (
+						<button
+							key={item.id}
+							onClick={item.action}
+							className={`display group relative flex items-center gap-3 rounded-xl py-2.5 text-[13px] font-medium text-slate-400 transition-all hover:bg-slate-800/60 hover:text-white ${
+								isExpanded ? "w-full px-3.5" : "h-10 w-10 justify-center"
+							}`}
+						>
+							<Icon className={`h-4 w-4 shrink-0 ${item.gradient}`} />
+							{isExpanded ? (
+								<span>{item.label}</span>
+							) : (
+								<span className="pointer-events-none absolute left-full z-50 ml-3 hidden whitespace-nowrap rounded-md bg-slate-900 px-2.5 py-1 text-xs font-medium text-white shadow-xl ring-1 ring-slate-800 group-hover:block">
+									{item.label}
+								</span>
+							)}
+						</button>
+					);
+				})}
+			</div>
+
+			<div
+				className={`h-px bg-slate-800/80 my-1 ${isExpanded ? "w-full" : "w-8"}`}
+			/>
+
+			{/* Workspaces List */}
+			<div
+				className={`flex-1 overflow-y-auto ${isExpanded ? "w-full" : "flex flex-col items-center gap-1"}`}
+			>
+				{isExpanded && (
+					<span className="onest mb-1.5 block px-3.5 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+						Workspaces ({workspaces.length})
+					</span>
+				)}
+				{workspaces.map((ws) => {
+					const isActive = location.pathname === `/workspace/${ws.id}`;
+					return (
+						<Link
+							key={ws.id}
+							to={`/workspace/${ws.id}`}
+							className={`display group relative flex items-center gap-3 rounded-xl py-2.5 text-[13px] font-medium transition-all ${
+								isExpanded ? "w-full px-3.5" : "h-10 w-10 justify-center"
+							} ${
+								isActive
+									? "border-l-2 border-teal-400 bg-gradient-to-r from-teal-500/20 to-transparent text-teal-300"
+									: "text-slate-400 hover:bg-slate-800/60 hover:text-white"
+							}`}
+						>
+							<FolderKanban className="h-4 w-4 shrink-0 transition-transform group-hover:scale-110 text-teal-500" />
+							{isExpanded ? (
+								<div className="flex flex-1 items-center justify-between min-w-0">
+									<span className="truncate">{ws.name}</span>
+									<span className="font-mono-ui text-[10px] text-slate-500">
+										{ws.tickets || 0}
+									</span>
+								</div>
+							) : (
+								<span className="pointer-events-none absolute left-full z-50 ml-3 hidden whitespace-nowrap rounded-md bg-slate-900 px-2.5 py-1 text-xs font-medium text-white shadow-xl ring-1 ring-slate-800 group-hover:block">
+									{ws.name}
+								</span>
+							)}
+						</Link>
+					);
+				})}
+			</div>
+
+			{/* Footer: User Profile Badge */}
+			<div
+				className={`mt-auto flex flex-col gap-1 ${isExpanded ? "w-full" : "items-center"}`}
+			>
 				<div
-					className={`h-px bg-slate-800 my-2 ${isExpanded ? "w-full" : "w-8"}`}
+					className={`h-px bg-slate-800/80 my-1 ${isExpanded ? "w-full" : "w-8"}`}
 				/>
 
 				<div
-					className={`flex-1 overflow-y-auto ${isExpanded ? "w-full pr-1" : "flex flex-col items-center gap-1"}`}
+					className={`flex items-center gap-3 py-2 ${isExpanded ? "w-full px-3.5" : "h-10 w-10 justify-center"}`}
 				>
-					{isExpanded && (
-						<span className="px-3 text-[10px] font-semibold uppercase tracking-wider text-slate-600 mb-1">
-							Workspaces
-						</span>
-					)}
-					{workspaces.map((ws) => {
-						const isActive = location.pathname === `/workspace/${ws.id}`;
-						return (
-							<Link
-								key={ws.id}
-								to={`/workspace/${ws.id}`}
-								aria-label={ws.name}
-								className={`group relative flex items-center gap-3 rounded-lg py-2.5 text-slate-400 transition-colors duration-200 ease-premium hover:bg-slate-800 hover:text-white ${
-									isExpanded ? "w-full px-3" : "h-10 w-10 justify-center"
-								} ${isActive ? "bg-slate-800 text-white" : ""}`}
-							>
-								<FolderKanban className="h-[18px] w-[18px] shrink-0" />
-								{isExpanded ? (
-									<span className="text-sm font-medium truncate">
-										{ws.name}
-									</span>
-								) : (
-									!isActive && (
-										<span className="pointer-events-none absolute left-full ml-3 whitespace-nowrap rounded-md bg-slate-900 px-2 py-1 text-[11px] font-medium text-white opacity-0 shadow-lg ring-1 ring-slate-800 transition-all duration-200 ease-premium -translate-x-2 group-hover:translate-x-0 group-hover:opacity-100 z-40">
-											{ws.name}
-										</span>
-									)
-								)}
-							</Link>
-						);
-					})}
-				</div>
-
-				<div
-					className={`flex flex-col gap-1 ${isExpanded ? "w-full" : "items-center"}`}
-				>
-					<div
-						className={`my-1 h-px bg-slate-800 ${isExpanded ? "w-full" : "w-8"}`}
-					/>
-					<button
-						className={`flex items-center gap-3 rounded-lg py-2.5 text-slate-400 transition-colors duration-200 ease-premium hover:bg-slate-800 hover:text-white w-full ${isExpanded ? "px-3" : "justify-center"}`}
-					>
-						<Settings className="h-[18px] w-[18px] shrink-0" />
-						{isExpanded && (
-							<span className="text-sm font-medium">Settings</span>
-						)}
-					</button>
-
-					<div
-						className={`flex items-center gap-3 py-2 ${isExpanded ? "w-full px-3" : "h-10 w-10 justify-center"}`}
-					>
-						<Avatar name={CURRENT_USER} />
-						{isExpanded && (
-							<div className="flex min-w-0 flex-col">
-								<span className="truncate text-xs font-medium text-white">
-									{CURRENT_USER}
-								</span>
-								<span className="text-[10px] text-slate-500">Free plan</span>
-							</div>
-						)}
+					<div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-indigo-600 font-mono-ui text-xs font-bold text-white ring-2 ring-indigo-500/30">
+						{currentUserFirstName.slice(0, 2).toUpperCase()}
 					</div>
+					{isExpanded && (
+						<div className="flex flex-1 flex-col min-w-0">
+							<span className="truncate text-xs font-bold text-white">
+								{currentUserFirstName}
+							</span>
+							<span className="flex items-center gap-1 text-[10px] text-slate-400 font-mono-ui">
+								<ShieldCheck className="h-3 w-3 text-emerald-400" /> Lead
+								Engineer
+							</span>
+						</div>
+					)}
 				</div>
-			</aside>
-
-			<CreateWorkspaceModal
-				isOpen={isModalOpen}
-				onClose={() => setIsModalOpen(false)}
-			/>
-		</>
+			</div>
+		</aside>
 	);
 }

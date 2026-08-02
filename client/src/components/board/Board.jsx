@@ -1,92 +1,175 @@
-import React from "react";
-import Column from "./Column";
-import { COLUMNS } from "../../data/constants";
-import Topbar from "../layout/Topbar";
+import React, { useEffect, useState, useMemo } from "react";
+import { DragDropContext } from "@hello-pangea/dnd";
 import { useParams } from "react-router-dom";
+import { io } from "socket.io-client";
+import { COLUMNS } from "../../data/constants";
+import { useAuthStore } from "../../store/useAuthStore";
 import { useWorkspaceStore } from "../../store/useWorkspaceStore";
-import NewTicketModal from "../modals/NewTicketModal";
+import { toast } from "sonner";
+import Column from "./Column";
+import Topbar from "../layout/Topbar";
+import { Loader2 } from "lucide-react";
 
-export default function Board({ boardData }) {
-	const { id } = useParams();
+const socket = io("http://localhost:5000");
 
-	const workspaces = useWorkspaceStore((state) => state.workspaces);
-	const currentWorkspace = workspaces.find((ws) => ws.id === id);
+export default function Board() {
+	const { id: workspaceId } = useParams();
+	const token = useAuthStore((state) => state.token);
+	const user = useAuthStore((state) => state.user);
 
-	const {
-		filtered,
-		draggedId,
-		dragOverCol,
-		justDropped,
-		setDraggedId,
-		setSelectedId,
-		setNewTicketCol,
-		setDragOverCol,
-		handleDrop,
-		newTicketCol,
-		handleCreateTicket,
-	} = boardData;
+	// Consume Zustand global state
+	const currentWorkspace = useWorkspaceStore((state) => state.currentWorkspace);
+	const fetchWorkspaceById = useWorkspaceStore(
+		(state) => state.fetchWorkspaceById,
+	);
+	const loading = useWorkspaceStore((state) => state.loading);
 
-	if (currentWorkspace && currentWorkspace.tickets === 0) {
+	// Local Search & Filter States for Topbar
+	const [searchQuery, setSearchQuery] = useState("");
+	const [priorityFilter, setPriorityFilter] = useState("all");
+	const [assigneeFilter, setAssigneeFilter] = useState("all");
+
+	// 1. Fetch Board Data from PostgreSQL on Mount or Workspace Change
+	useEffect(() => {
+		if (workspaceId) {
+			fetchWorkspaceById(workspaceId);
+		}
+	}, [workspaceId, fetchWorkspaceById]);
+
+	// 2. Socket.io Room Isolation & Real-Time Sync
+	useEffect(() => {
+		if (!workspaceId) return;
+
+		socket.emit("join_workspace", workspaceId);
+
+		socket.on("ticket_moved", () => {
+			fetchWorkspaceById(workspaceId);
+		});
+
+		return () => {
+			socket.off("ticket_moved");
+		};
+	}, [workspaceId, fetchWorkspaceById]);
+
+	// 3. Handle Drag End with Optimistic Rollback & Express Persistence
+	const onDragEnd = async (result) => {
+		const { destination, source, draggableId } = result;
+
+		if (!destination) return;
+		if (
+			destination.droppableId === source.droppableId &&
+			destination.index === source.index
+		)
+			return;
+
+		const fromStatus = source.droppableId;
+		const toStatus = destination.droppableId;
+
+		const originalWorkspace = currentWorkspace;
+
+		// Optimistic UI update in Zustand (String comparison fix)
+		useWorkspaceStore.setState((state) => {
+			if (!state.currentWorkspace) return state;
+			const updatedTasks = state.currentWorkspace.tasks.map((task) =>
+				String(task.id) === String(draggableId)
+					? { ...task, status: toStatus }
+					: task,
+			);
+			return {
+				currentWorkspace: {
+					...state.currentWorkspace,
+					tasks: updatedTasks,
+				},
+			};
+		});
+
+		// Persist update via Authenticated API
+		try {
+			const res = await fetch(
+				`http://localhost:5000/api/tickets/${draggableId}/move`,
+				{
+					method: "PATCH",
+					headers: {
+						"Content-Type": "application/json",
+						Authorization: `Bearer ${token}`,
+					},
+					body: JSON.stringify({
+						projectId: workspaceId,
+						fromStatus,
+						toStatus,
+						position: destination.index,
+						actor: user?.name || "Developer",
+					}),
+				},
+			);
+
+			if (!res.ok) {
+				const errorData = await res.json();
+				throw new Error(errorData.message || "Failed to persist move");
+			}
+		} catch (err) {
+			console.error("Failed to sync drag movement:", err);
+			useWorkspaceStore.setState({ currentWorkspace: originalWorkspace });
+			toast.error(err.message || "Could not sync ticket move to server");
+		}
+	};
+
+	const rawTasks = currentWorkspace?.tasks || [];
+
+	// Filter tasks based on search, priority, and assignee settings from Topbar
+	const filteredTasks = useMemo(() => {
+		return rawTasks.filter((t) => {
+			const matchesQuery = searchQuery
+				? t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+					(t.task_key &&
+						t.task_key.toLowerCase().includes(searchQuery.toLowerCase()))
+				: true;
+
+			const matchesPriority =
+				priorityFilter === "all" ||
+				t.priority?.toLowerCase() === priorityFilter.toLowerCase();
+
+			const matchesAssignee =
+				assigneeFilter === "all" ||
+				t.assignee_name === assigneeFilter ||
+				t.assignee === assigneeFilter;
+
+			return matchesQuery && matchesPriority && matchesAssignee;
+		});
+	}, [rawTasks, searchQuery, priorityFilter, assigneeFilter]);
+
+	if (loading && !currentWorkspace) {
 		return (
-			<div className="flex flex-col h-full min-h-0">
-				<Topbar boardData={boardData} />
-				<div className="flex-1 flex items-center justify-center min-h-0 p-4">
-					<div className="text-center p-8 bg-white rounded-2xl border border-dashed border-slate-300 shadow-sm">
-						<h2 className="text-xl font-semibold text-slate-700">
-							This board is empty
-						</h2>
-						<p className="text-slate-500 mt-1 mb-4">
-							Create your first ticket to get started!
-						</p>
-						<button className="px-4 py-2 bg-teal-500 text-white rounded-lg font-medium hover:bg-teal-600 transition-colors">
-							+ Add Ticket
-						</button>
-					</div>
-				</div>
-				<NewTicketModal
-					newTicketCol={newTicketCol}
-					setNewTicketCol={setNewTicketCol}
-					handleCreateTicket={handleCreateTicket}
-				/>
+			<div className="flex flex-col items-center justify-center min-h-[500px] text-stone-400">
+				<Loader2 className="h-8 w-8 animate-spin text-teal-600 mb-2" />
+				<span className="font-mono-ui text-xs">Loading board tasks...</span>
 			</div>
 		);
 	}
 
-	const workspaceTickets = filtered.filter((t) => t.workspaceId === id);
-
 	return (
-		<div className="flex flex-col h-full min-h-0">
-			<Topbar boardData={boardData} />
+		<div className="flex flex-col h-full w-full min-h-screen bg-stone-50">
+			{/* Render Topbar */}
+			<Topbar
+				searchQuery={searchQuery}
+				setSearchQuery={setSearchQuery}
+				priorityFilter={priorityFilter}
+				setPriorityFilter={setPriorityFilter}
+				assigneeFilter={assigneeFilter}
+				setAssigneeFilter={setAssigneeFilter}
+			/>
 
-			<div className="min-h-0 flex-1 overflow-x-auto overflow-y-auto sm:overflow-y-hidden px-4 md:px-6 py-5 dot-grid ">
-				<div className="flex flex-col sm:flex-row gap-4 h-auto min-h-0 pb-4 sm:pb-0">
+			{/* Kanban Drag & Drop Columns */}
+			<DragDropContext onDragEnd={onDragEnd}>
+				<div className="flex gap-4 p-6 flex-1 min-w-max">
 					{COLUMNS.map((col) => {
-						const colTickets = workspaceTickets.filter(
-							(t) => t.status === col.id,
+						const colTickets = filteredTasks.filter(
+							(t) => String(t.status) === String(col.id),
 						);
-						return (
-							<Column
-								key={col.id}
-								col={col}
-								colTickets={colTickets}
-								draggedId={draggedId}
-								dragOverCol={dragOverCol}
-								justDropped={justDropped}
-								setDraggedId={setDraggedId}
-								setSelectedId={setSelectedId}
-								setNewTicketCol={setNewTicketCol}
-								setDragOverCol={setDragOverCol}
-								handleDrop={handleDrop}
-							/>
-						);
+						return <Column key={col.id} col={col} colTickets={colTickets} />;
 					})}
 				</div>
-			</div>
-			<NewTicketModal
-				newTicketCol={newTicketCol}
-				setNewTicketCol={setNewTicketCol}
-				handleCreateTicket={handleCreateTicket}
-			/>
+			</DragDropContext>
 		</div>
 	);
 }
