@@ -4,15 +4,23 @@ import { useWorkspaceStore } from "../../store/useWorkspaceStore";
 
 export default function ShortcutsModal() {
 	const isShortcutsOpen = useWorkspaceStore((state) => state.isShortcutsOpen);
-	const setIsShortcutsOpen = useWorkspaceStore((state) => state.setIsShortcutsOpen);
+	const setIsShortcutsOpen = useWorkspaceStore(
+		(state) => state.setIsShortcutsOpen,
+	);
 	const setNewTicketCol = useWorkspaceStore((state) => state.setNewTicketCol);
-	const setIsCommandPaletteOpen = useWorkspaceStore((state) => state.setIsCommandPaletteOpen);
+	const setIsCommandPaletteOpen = useWorkspaceStore(
+		(state) => state.setIsCommandPaletteOpen,
+	);
 
 	// Global hotkeys listener (guarding against typing inside inputs or textareas)
 	useEffect(() => {
 		const handleKeyDown = (e) => {
 			const activeTag = document.activeElement?.tagName?.toLowerCase();
-			if (activeTag === "input" || activeTag === "textarea" || document.activeElement?.isContentEditable) {
+			if (
+				activeTag === "input" ||
+				activeTag === "textarea" ||
+				document.activeElement?.isContentEditable
+			) {
 				return;
 			}
 
@@ -30,7 +38,12 @@ export default function ShortcutsModal() {
 
 		window.addEventListener("keydown", handleKeyDown);
 		return () => window.removeEventListener("keydown", handleKeyDown);
-	}, [isShortcutsOpen, setIsShortcutsOpen, setNewTicketCol, setIsCommandPaletteOpen]);
+	}, [
+		isShortcutsOpen,
+		setIsShortcutsOpen,
+		setNewTicketCol,
+		setIsCommandPaletteOpen,
+	]);
 
 	if (!isShortcutsOpen) return null;
 
@@ -70,7 +83,7 @@ export default function ShortcutsModal() {
 					</button>
 				</div>
 
-				<div className="divide-y divide-slate-100 dark:divide-slate-800/60 mt-3 font-mono-ui">
+				<div className="inter divide-y divide-slate-100 dark:divide-slate-800/60 mt-3 ">
 					{shortcuts.map((s, idx) => (
 						<div key={idx} className="flex items-center justify-between py-2.5">
 							<span className="text-xs text-slate-600 dark:text-slate-300">

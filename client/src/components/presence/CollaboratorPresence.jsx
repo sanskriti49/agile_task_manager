@@ -4,7 +4,8 @@ import { useWorkspaceStore } from "../../store/useWorkspaceStore";
 import { avatarColor } from "../utils/avatarColor";
 
 export default function CollaboratorPresence() {
-	const collaborators = useWorkspaceStore((state) => state.onlineCollaborators) || [];
+	const collaborators =
+		useWorkspaceStore((state) => state.onlineCollaborators) || [];
 
 	if (collaborators.length === 0) return null;
 
@@ -18,7 +19,7 @@ export default function CollaboratorPresence() {
 				<span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
 			</span>
 
-			<span className="font-semibold text-[11px] hidden sm:inline">
+			<span className="font-semibold work-sans text-[11.5px] hidden sm:inline">
 				{collaborators.length} online
 			</span>
 

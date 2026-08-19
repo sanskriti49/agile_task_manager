@@ -250,7 +250,7 @@ export default function Board() {
 					{activeSprint ? (
 						<Link
 							to={`/workspace/${workspaceId}/sprints`}
-							className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 font-bold hover:bg-amber-100 transition-colors"
+							className="inter inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 font-bold hover:bg-amber-100 transition-colors"
 						>
 							<Flame className="h-3.5 w-3.5 text-amber-500 animate-pulse" />
 							<span>Active Sprint: {activeSprint.name}</span>
@@ -259,7 +259,7 @@ export default function Board() {
 						<button
 							type="button"
 							onClick={() => setIsCreateSprintModalOpen(true)}
-							className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-amber-600 font-semibold"
+							className="onest inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-amber-600 font-semibold"
 						>
 							<Flame className="h-3.5 w-3.5 text-slate-400" /> Start a Sprint
 						</button>
@@ -267,7 +267,7 @@ export default function Board() {
 
 					<span className="text-slate-300 dark:text-slate-700">|</span>
 
-					<span className="text-slate-500 dark:text-slate-400">
+					<span className="onest text-slate-500 dark:text-slate-400">
 						{filteredTasks.length} issue{filteredTasks.length !== 1 ? "s" : ""}{" "}
 						on board
 					</span>

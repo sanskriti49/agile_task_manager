@@ -36,8 +36,12 @@ export default function Topbar({
 	const currentWorkspace = useWorkspaceStore((state) => state.currentWorkspace);
 	const updateWorkspace = useWorkspaceStore((state) => state.updateWorkspace);
 	const sprints = useWorkspaceStore((state) => state.sprints) || [];
-	const setIsCommandPaletteOpen = useWorkspaceStore((state) => state.setIsCommandPaletteOpen);
-	const setIsShortcutsOpen = useWorkspaceStore((state) => state.setIsShortcutsOpen);
+	const setIsCommandPaletteOpen = useWorkspaceStore(
+		(state) => state.setIsCommandPaletteOpen,
+	);
+	const setIsShortcutsOpen = useWorkspaceStore(
+		(state) => state.setIsShortcutsOpen,
+	);
 
 	const theme = useThemeStore((state) => state.theme);
 	const toggleTheme = useThemeStore((state) => state.toggleTheme);
@@ -80,11 +84,11 @@ export default function Topbar({
 			<div className="flex items-center gap-2 min-w-0">
 				<Link
 					to="/dashboard"
-					className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 font-mono-ui text-xs font-semibold text-slate-500 dark:text-slate-400 transition-all hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-teal-600 dark:hover:text-teal-400"
+					className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm inter font-semibold text-slate-500 dark:text-slate-400 transition-all hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-teal-600 dark:hover:text-teal-400"
 					title="Go to Dashboard"
 				>
 					<LayoutGrid className="h-4 w-4 text-slate-400 group-hover:text-teal-600" />
-					<span className="hidden sm:inline">Workspaces</span>
+					<span className="display hidden sm:inline">Workspaces</span>
 				</Link>
 
 				<ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-300 dark:text-slate-700" />
@@ -129,7 +133,7 @@ export default function Topbar({
 						value={searchQuery}
 						onChange={(e) => setSearchQuery(e.target.value)}
 						placeholder="Search tasks (Ctrl+K)..."
-						className="font-mono-ui w-44 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800/80 py-1.5 pl-8 pr-8 text-xs text-slate-800 dark:text-slate-200 transition-all placeholder:text-slate-400 focus:w-56 focus:border-teal-500 focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-100 dark:focus:ring-teal-900"
+						className="work-sans w-44 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800/80 py-1.5 pl-8 pr-8 text-xs text-slate-800 dark:text-slate-200 transition-all placeholder:text-slate-400 focus:w-56 focus:border-teal-500 focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-100 dark:focus:ring-teal-900"
 					/>
 					{searchQuery ? (
 						<button
@@ -152,7 +156,7 @@ export default function Topbar({
 				</div>
 
 				{/* Priority Tabs */}
-				<div className="hidden lg:flex items-center rounded-xl bg-slate-100/80 dark:bg-slate-800/80 p-1 font-mono-ui text-xs">
+				<div className="hidden lg:flex items-center rounded-xl bg-slate-100/80 dark:bg-slate-800/80 p-1 display text-xs">
 					{[
 						{ id: "all", label: "All" },
 						{ id: "high", label: "High", dot: "bg-rose-500" },
@@ -163,7 +167,7 @@ export default function Topbar({
 							key={item.id}
 							type="button"
 							onClick={() => setPriorityFilter(item.id)}
-							className={`flex items-center gap-1.5 rounded-lg px-2 py-1 text-[11px] font-semibold transition-all ${
+							className={`flex items-center gap-1.5 rounded-lg px-2 py-1 text-[11px] font-semibold display transition-all ${
 								priorityFilter === item.id
 									? "bg-white dark:bg-slate-900 text-teal-700 dark:text-teal-300 shadow-2xs"
 									: "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
@@ -244,7 +248,11 @@ export default function Topbar({
 					className="p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
 					title={`Switch to ${theme === "light" ? "Dark" : "Light"} mode`}
 				>
-					{theme === "light" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4 text-amber-400" />}
+					{theme === "light" ? (
+						<Moon className="h-4 w-4" />
+					) : (
+						<Sun className="h-4 w-4 text-amber-400" />
+					)}
 				</button>
 			</div>
 		</header>

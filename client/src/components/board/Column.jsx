@@ -1,11 +1,21 @@
 import React from "react";
 import { Droppable, Draggable } from "@hello-pangea/dnd";
-import { Inbox, Plus, AlertCircle, Calendar, CheckSquare, ShieldAlert, Tag as TagIcon } from "lucide-react";
+import {
+	Inbox,
+	Plus,
+	AlertCircle,
+	Calendar,
+	CheckSquare,
+	ShieldAlert,
+	Tag as TagIcon,
+} from "lucide-react";
 import { useWorkspaceStore } from "../../store/useWorkspaceStore";
 import { PRIORITY } from "../../data/constants";
 
 export default function Column({ col, colTickets = [], wipLimit = 0 }) {
-	const setSelectedTicket = useWorkspaceStore((state) => state.setSelectedTicket);
+	const setSelectedTicket = useWorkspaceStore(
+		(state) => state.setSelectedTicket,
+	);
 	const setNewTicketCol = useWorkspaceStore((state) => state.setNewTicketCol);
 
 	const isWipExceeded = wipLimit > 0 && colTickets.length > wipLimit;
@@ -21,7 +31,9 @@ export default function Column({ col, colTickets = [], wipLimit = 0 }) {
 			{/* Column Header */}
 			<div className="flex items-center justify-between mb-2 shrink-0">
 				<div className="flex items-center gap-2 min-w-0">
-					<span className={`h-2.5 w-2.5 rounded-full shrink-0 ${col.dot || "bg-slate-400"}`} />
+					<span
+						className={`h-2.5 w-2.5 rounded-full shrink-0 ${col.dot || "bg-slate-400"}`}
+					/>
 					<span className="display font-bold text-sm text-slate-800 dark:text-slate-100 truncate">
 						{col.label}
 					</span>
@@ -33,7 +45,9 @@ export default function Column({ col, colTickets = [], wipLimit = 0 }) {
 						}`}
 					>
 						{colTickets.length}
-						{wipLimit > 0 && <span className="text-[10px] opacity-75">/{wipLimit}</span>}
+						{wipLimit > 0 && (
+							<span className="text-[10px] opacity-75">/{wipLimit}</span>
+						)}
 					</span>
 				</div>
 
@@ -52,7 +66,9 @@ export default function Column({ col, colTickets = [], wipLimit = 0 }) {
 			{isWipExceeded && (
 				<div className="mb-2.5 flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-rose-100/80 dark:bg-rose-950/80 border border-rose-200 dark:border-rose-800 text-[11px] font-mono-ui font-semibold text-rose-700 dark:text-rose-300">
 					<AlertCircle className="h-3.5 w-3.5 shrink-0" />
-					<span>WIP Limit exceeded ({colTickets.length}/{wipLimit})</span>
+					<span>
+						WIP Limit exceeded ({colTickets.length}/{wipLimit})
+					</span>
 				</div>
 			)}
 
@@ -71,14 +87,15 @@ export default function Column({ col, colTickets = [], wipLimit = 0 }) {
 						{colTickets.length === 0 && (
 							<div className="flex flex-col items-center justify-center gap-1.5 border border-dashed border-slate-300 dark:border-slate-800 rounded-xl text-center py-12 px-3">
 								<Inbox className="h-5 w-5 text-slate-300 dark:text-slate-600" />
-								<span className="font-mono-ui text-xs text-slate-400 dark:text-slate-500">
+								<span className="display text-xs text-slate-400 dark:text-slate-500">
 									No issues in {col.label}
 								</span>
 							</div>
 						)}
 
 						{colTickets.map((t, index) => {
-							const priorityCfg = PRIORITY[t.priority?.toLowerCase()] || PRIORITY.medium;
+							const priorityCfg =
+								PRIORITY[t.priority?.toLowerCase()] || PRIORITY.medium;
 							const isOverdue =
 								t.status !== "done" &&
 								t.due_date &&
@@ -187,10 +204,13 @@ export default function Column({ col, colTickets = [], wipLimit = 0 }) {
 														>
 															<Calendar className="h-3 w-3" />
 															<span>
-																{new Date(t.due_date).toLocaleDateString(undefined, {
-																	month: "short",
-																	day: "numeric",
-																})}
+																{new Date(t.due_date).toLocaleDateString(
+																	undefined,
+																	{
+																		month: "short",
+																		day: "numeric",
+																	},
+																)}
 															</span>
 														</span>
 													)}

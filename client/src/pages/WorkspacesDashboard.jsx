@@ -56,7 +56,7 @@ function WorkspaceCard({ ws }) {
 						<h3 className="display text-base font-bold text-slate-900 dark:text-slate-100">
 							{ws.name}
 						</h3>
-						<p className="font-mono-ui mt-0.5 flex items-center gap-1.5 text-xs text-slate-400">
+						<p className="work-sans mt-0.5 flex items-center gap-1.5 text-xs text-slate-400">
 							<span className={`h-1.5 w-1.5 rounded-full ${palette.dot}`} />
 							{ws.role ? `Role: ${ws.role}` : "Member"}
 						</p>
@@ -65,17 +65,23 @@ function WorkspaceCard({ ws }) {
 				<ArrowRight className="h-4 w-4 shrink-0 text-slate-300 dark:text-slate-600 transition-transform group-hover:translate-x-0.5 group-hover:text-teal-600" />
 			</div>
 
-			<div className="font-mono-ui mt-4 flex items-baseline gap-1.5 text-sm">
-				<span className="font-bold text-amber-600 dark:text-amber-400">{active}</span>
+			<div className="onest mt-4 flex items-baseline gap-1.5 text-sm">
+				<span className="font-bold text-amber-600 dark:text-amber-400">
+					{active}
+				</span>
 				<span className="text-slate-400">active</span>
 				<span className="text-slate-300 dark:text-slate-700">/</span>
-				<span className="font-bold text-slate-700 dark:text-slate-300">{ws.tickets}</span>
+				<span className="font-bold text-slate-700 dark:text-slate-300">
+					{ws.tickets}
+				</span>
 				<span className="text-slate-400">total</span>
 			</div>
 
 			<div className="mt-4">
 				<div className="mb-1.5 flex items-center justify-between font-mono-ui">
-					<span className="text-xs font-medium text-slate-500">Completion</span>
+					<span className="onest text-xs font-medium text-slate-500">
+						Completion
+					</span>
 					<span className="text-xs font-bold text-slate-900 dark:text-slate-100">
 						{progress}%
 					</span>
@@ -85,7 +91,7 @@ function WorkspaceCard({ ws }) {
 
 			<div className="mt-4 flex items-end justify-between">
 				<div>
-					<p className="font-mono-ui mb-1 text-[10px] uppercase tracking-wide text-slate-400">
+					<p className="display mb-1 text-[10px] uppercase tracking-wide text-slate-400">
 						Activity Pulse
 					</p>
 					<PulseStrip pulse={pulse} palette={palette} />
@@ -116,9 +122,7 @@ function NewWorkspaceTile() {
 			<div className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-300 dark:border-slate-700 transition-colors group-hover:border-teal-600 group-hover:bg-white dark:group-hover:bg-slate-800">
 				<Plus className="h-5 w-5" />
 			</div>
-			<span className="font-mono-ui text-xs font-bold uppercase tracking-wide">
-				New Workspace
-			</span>
+			<span className="onest text-sm font-bold">New Workspace</span>
 		</button>
 	);
 }
@@ -139,7 +143,7 @@ function EmptyState() {
 			</p>
 			<button
 				onClick={() => setIsCreateWorkspaceModalOpen(true)}
-				className="mt-4 inline-flex items-center gap-2 rounded-xl bg-teal-600 px-4 py-2 text-sm font-bold text-white hover:bg-teal-700 font-mono-ui shadow-xs"
+				className="mt-4 inline-flex items-center gap-2 rounded-xl bg-teal-600 px-4 py-2 text-sm font-bold text-white hover:bg-teal-700 shadow-xs"
 			>
 				<Plus className="h-4 w-4" /> Create Workspace
 			</button>
@@ -162,7 +166,9 @@ export default function WorkspacesDashboard() {
 		fetchWorkspaces();
 	}, [fetchWorkspaces]);
 
-	const currentUserFirstName = user?.name ? user.name.split(" ")[0] : "Developer";
+	const currentUserFirstName = user?.name
+		? user.name.split(" ")[0]
+		: "Developer";
 	const totalTickets = useMemo(
 		() => workspaces.reduce((a, ws) => a + (ws.tickets || 0), 0),
 		[workspaces],
@@ -185,14 +191,15 @@ export default function WorkspacesDashboard() {
 				{/* Greeting & Header */}
 				<div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between pb-6 border-b border-slate-200/80 dark:border-slate-800">
 					<div>
-						<span className="font-mono-ui text-xs font-bold uppercase tracking-wide text-teal-600 dark:text-teal-400">
+						<span className="inter text-xs font-bold uppercase tracking-wide text-teal-600 dark:text-teal-400">
 							Welcome back, {currentUserFirstName}
 						</span>
 						<h1 className="display mt-1 text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100">
 							Command Center
 						</h1>
-						<p className="mt-1 text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-mono-ui">
-							{workspaces.length} workspace{workspaces.length !== 1 ? "s" : ""} · {totalTickets} total tasks
+						<p className="onest mt-1 text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-mono-ui">
+							{workspaces.length} workspace{workspaces.length !== 1 ? "s" : ""}{" "}
+							· {totalTickets} total tasks
 						</p>
 					</div>
 
@@ -203,12 +210,12 @@ export default function WorkspacesDashboard() {
 								value={search}
 								onChange={(e) => setSearch(e.target.value)}
 								placeholder="Search workspaces..."
-								className="font-mono-ui w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 py-2 pl-9 pr-3 text-xs text-slate-700 dark:text-slate-200 placeholder:text-slate-400 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-100 dark:focus:ring-teal-900"
+								className="work-sans w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 py-2 pl-9 pr-3 text-xs text-slate-700 dark:text-slate-200 placeholder:text-slate-400 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-100 dark:focus:ring-teal-900"
 							/>
 						</div>
 						<button
 							onClick={() => setIsCreateWorkspaceModalOpen(true)}
-							className="flex items-center justify-center gap-1.5 rounded-xl bg-teal-600 px-4 py-2 text-xs font-bold text-white hover:bg-teal-700 transition-colors font-mono-ui shadow-xs"
+							className="onest flex items-center justify-center gap-1.5 rounded-xl bg-teal-600 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-700 transition-colors shadow-xs"
 						>
 							<Plus className="h-4 w-4" /> New Workspace
 						</button>
@@ -216,7 +223,7 @@ export default function WorkspacesDashboard() {
 				</div>
 
 				{/* Stat Ledger */}
-				<div className="mt-6 grid grid-cols-2 gap-3 sm:flex sm:gap-0 sm:overflow-hidden sm:rounded-2xl sm:border sm:border-slate-200/80 dark:sm:border-slate-800 sm:divide-x sm:divide-slate-200/80 dark:sm:divide-slate-800 bg-white dark:bg-slate-900 shadow-2xs font-mono-ui">
+				<div className="mt-6 onest grid grid-cols-2 gap-3 sm:flex sm:gap-0 sm:overflow-hidden sm:rounded-2xl sm:border sm:border-slate-200/80 dark:sm:border-slate-800 sm:divide-x sm:divide-slate-200/80 dark:sm:divide-slate-800 bg-white dark:bg-slate-900 shadow-2xs font-mono-ui">
 					<StatSegment
 						icon={LayoutGrid}
 						label="Workspaces"
@@ -244,7 +251,9 @@ export default function WorkspacesDashboard() {
 				{loading && workspaces.length === 0 ? (
 					<div className="flex flex-col items-center justify-center py-20 text-slate-400">
 						<Loader2 className="h-8 w-8 animate-spin text-teal-600 mb-2" />
-						<span className="font-mono-ui text-xs">Loading command center from PostgreSQL...</span>
+						<span className="text-xs">
+							Loading command center from PostgreSQL...
+						</span>
 					</div>
 				) : workspaces.length === 0 ? (
 					<div className="mt-8">
@@ -252,7 +261,7 @@ export default function WorkspacesDashboard() {
 					</div>
 				) : (
 					<section className="mt-8">
-						<span className="font-mono-ui text-xs font-bold uppercase tracking-wide text-slate-400 mb-4 block">
+						<span className="display text-xs font-bold uppercase tracking-wide text-slate-400 mb-4 block">
 							All Workspaces ({filteredWorkspaces.length})
 						</span>
 						<div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">

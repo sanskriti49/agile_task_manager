@@ -53,11 +53,12 @@ export default function WipLimitModal() {
 					</button>
 				</div>
 
-				<p className="text-xs text-slate-500 dark:text-slate-400 mt-2 font-mono-ui leading-relaxed">
-					Set Work-In-Progress (WIP) limits per column. Visual warning banners appear when tasks exceed these thresholds.
+				<p className="text-xs text-slate-500 dark:text-slate-400 mt-2 inter leading-relaxed">
+					Set Work-In-Progress (WIP) limits per column. Visual warning banners
+					appear when tasks exceed these thresholds.
 				</p>
 
-				<div className="space-y-3 mt-4 font-mono-ui">
+				<div className="space-y-3 mt-4 onest">
 					{COLUMNS.map((col) => (
 						<div key={col.id} className="flex items-center justify-between">
 							<div className="flex items-center gap-2">
@@ -83,18 +84,18 @@ export default function WipLimitModal() {
 					))}
 				</div>
 
-				<div className="flex justify-end gap-2 mt-6 pt-3 border-t border-slate-100 dark:border-slate-800 font-mono-ui">
+				<div className="onest flex justify-end gap-2 mt-6 pt-3 border-t border-slate-100 dark:border-slate-800 duration:200">
 					<button
 						type="button"
 						onClick={() => setIsOpen(false)}
-						className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
+						className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800  duration:200"
 					>
 						Cancel
 					</button>
 					<button
 						type="button"
 						onClick={handleSave}
-						className="flex items-center gap-1 px-4 py-1.5 rounded-lg text-xs font-bold bg-teal-600 hover:bg-teal-700 text-white shadow-xs"
+						className="flex items-center gap-1 px-4 py-1.5 rounded-lg text-xs font-bold bg-teal-600 hover:bg-teal-700  duration:200 text-white shadow-xs"
 					>
 						<Check className="h-3.5 w-3.5" /> Save Limits
 					</button>

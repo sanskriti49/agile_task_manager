@@ -53,7 +53,9 @@ export default function Sidebar() {
 		? location.pathname.split("/")[2]
 		: null;
 
-	const currentUserFirstName = user?.name ? user.name.split(" ")[0] : "Developer";
+	const currentUserFirstName = user?.name
+		? user.name.split(" ")[0]
+		: "Developer";
 
 	return (
 		<aside
@@ -73,9 +75,6 @@ export default function Sidebar() {
 						<div className="flex items-center gap-1.5">
 							<span className="text-xl font-extrabold tracking-wider uppercase bg-clip-text text-transparent bg-gradient-to-r from-teal-400 via-cyan-300 to-indigo-400">
 								FLUX
-							</span>
-							<span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-teal-950 text-teal-400 border border-teal-800">
-								AGILE
 							</span>
 						</div>
 					)}
@@ -105,21 +104,25 @@ export default function Sidebar() {
 			>
 				<Plus className="h-4 w-4 shrink-0 transition-transform group-hover:rotate-90" />
 				{isExpanded ? (
-					<span>New Workspace</span>
+					<span className="onest ">New Workspace</span>
 				) : (
-					<span className="pointer-events-none absolute left-full z-50 ml-3 hidden whitespace-nowrap rounded-md bg-slate-900 px-2.5 py-1 text-xs text-white shadow-xl group-hover:block">
+					<span className="onest pointer-events-none absolute left-full z-50 ml-3 hidden whitespace-nowrap rounded-md bg-slate-900 px-2.5 py-1 text-xs text-white shadow-xl group-hover:block">
 						New Workspace
 					</span>
 				)}
 			</button>
 
-			<div className={`h-px bg-slate-800/80 ${isExpanded ? "w-full" : "w-8"}`} />
+			<div
+				className={`h-px bg-slate-800/80 ${isExpanded ? "w-full" : "w-8"}`}
+			/>
 
 			{/* Main Global Navigation */}
-			<nav className={`flex flex-col gap-1 ${isExpanded ? "w-full" : "items-center"}`}>
+			<nav
+				className={`display flex flex-col gap-1 ${isExpanded ? "w-full" : "items-center"}`}
+			>
 				<Link
 					to="/dashboard"
-					className={`flex items-center gap-3 rounded-xl py-2 text-xs font-medium transition-all ${
+					className={` flex items-center gap-3 rounded-xl py-2 text-xs font-medium transition-all ${
 						isExpanded ? "w-full px-3" : "h-10 w-10 justify-center"
 					} ${
 						location.pathname === "/dashboard"
@@ -149,13 +152,17 @@ export default function Sidebar() {
 			{/* Active Project Navigation (if inside a project) */}
 			{currentWorkspaceId && (
 				<>
-					<div className={`h-px bg-slate-800/80 my-1 ${isExpanded ? "w-full" : "w-8"}`} />
+					<div
+						className={`h-px bg-slate-800/80 my-1 ${isExpanded ? "w-full" : "w-8"}`}
+					/>
 					{isExpanded && (
-						<span className="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+						<span className="display px-3 text-[10px] font-bold uppercase tracking-wider text-slate-500">
 							Active Project Views
 						</span>
 					)}
-					<div className={`flex flex-col gap-1 ${isExpanded ? "w-full" : "items-center"}`}>
+					<div
+						className={`onest flex flex-col gap-1 ${isExpanded ? "w-full" : "items-center"}`}
+					>
 						<Link
 							to={`/workspace/${currentWorkspaceId}`}
 							className={`flex items-center gap-3 rounded-xl py-2 text-xs font-medium transition-all ${
@@ -189,7 +196,8 @@ export default function Sidebar() {
 							className={`flex items-center gap-3 rounded-xl py-2 text-xs font-medium transition-all ${
 								isExpanded ? "w-full px-3" : "h-10 w-10 justify-center"
 							} ${
-								location.pathname.includes("/dashboard") && location.pathname !== "/dashboard"
+								location.pathname.includes("/dashboard") &&
+								location.pathname !== "/dashboard"
 									? "border-l-2 border-teal-400 bg-gradient-to-r from-teal-500/20 to-transparent text-teal-300 font-bold"
 									: "text-slate-400 hover:bg-slate-800/60 hover:text-white"
 							}`}
@@ -201,7 +209,9 @@ export default function Sidebar() {
 				</>
 			)}
 
-			<div className={`h-px bg-slate-800/80 my-1 ${isExpanded ? "w-full" : "w-8"}`} />
+			<div
+				className={`h-px bg-slate-800/80 my-1 ${isExpanded ? "w-full" : "w-8"}`}
+			/>
 
 			{/* Workspaces Scrollable List */}
 			<div
@@ -210,7 +220,7 @@ export default function Sidebar() {
 				}`}
 			>
 				{isExpanded && (
-					<span className="mb-1.5 block px-3 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+					<span className="display mb-1.5 block px-3 text-[10px] font-bold uppercase tracking-wider text-slate-500">
 						Workspaces ({workspaces.length})
 					</span>
 				)}
@@ -220,7 +230,7 @@ export default function Sidebar() {
 						<Link
 							key={ws.id}
 							to={`/workspace/${ws.id}`}
-							className={`group relative flex items-center gap-3 rounded-xl py-2 text-xs font-medium transition-all ${
+							className={`display group relative flex items-center gap-3 rounded-xl py-2 text-xs font-medium transition-all ${
 								isExpanded ? "w-full px-3" : "h-10 w-10 justify-center"
 							} ${
 								isActive
@@ -247,8 +257,9 @@ export default function Sidebar() {
 			</div>
 
 			{/* Tools Quick Triggers */}
-			<div className={`flex flex-col gap-1 ${isExpanded ? "w-full" : "items-center"}`}>
-				{/* Command Palette Trigger */}
+			<div
+				className={`flex flex-col gap-1 ${isExpanded ? "w-full" : "items-center"}`}
+			>
 				<button
 					type="button"
 					onClick={() => setIsCommandPaletteOpen(true)}
@@ -259,7 +270,7 @@ export default function Sidebar() {
 				>
 					<Command className="h-4 w-4 text-slate-400" />
 					{isExpanded ? (
-						<div className="flex items-center justify-between flex-1">
+						<div className="display flex items-center justify-between flex-1">
 							<span>Command Palette</span>
 							<kbd className="text-[10px] bg-slate-900 px-1 rounded text-slate-500">
 								⌘K
@@ -272,7 +283,7 @@ export default function Sidebar() {
 				<button
 					type="button"
 					onClick={() => setIsShortcutsOpen(true)}
-					className={`flex items-center gap-3 rounded-xl py-1.5 text-xs text-slate-400 hover:bg-slate-800 hover:text-white transition-colors ${
+					className={`display flex items-center gap-3 rounded-xl py-1.5 text-xs text-slate-400 hover:bg-slate-800 hover:text-white transition-colors ${
 						isExpanded ? "w-full px-3" : "h-9 w-9 justify-center"
 					}`}
 					title="Keyboard Shortcuts (?)"
@@ -290,8 +301,12 @@ export default function Sidebar() {
 			</div>
 
 			{/* Footer: User Profile Badge & Logout */}
-			<div className={`mt-auto flex flex-col gap-1 ${isExpanded ? "w-full" : "items-center"}`}>
-				<div className={`h-px bg-slate-800/80 my-1 ${isExpanded ? "w-full" : "w-8"}`} />
+			<div
+				className={`onest mt-auto flex flex-col gap-1 ${isExpanded ? "w-full" : "items-center"}`}
+			>
+				<div
+					className={`h-px bg-slate-800/80 my-1 ${isExpanded ? "w-full" : "w-8"}`}
+				/>
 
 				<div
 					className={`flex items-center justify-between py-2 ${
@@ -308,7 +323,8 @@ export default function Sidebar() {
 									{user?.name || "Developer"}
 								</span>
 								<span className="flex items-center gap-1 text-[10px] text-slate-400">
-									<ShieldCheck className="h-3 w-3 text-emerald-400" /> Agile Member
+									<ShieldCheck className="h-3 w-3 text-emerald-400" /> Agile
+									Member
 								</span>
 							</div>
 						)}

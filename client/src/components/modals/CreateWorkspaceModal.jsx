@@ -76,7 +76,7 @@ export default function CreateWorkspaceModal({ isOpen, onClose }) {
 
 					<div className="space-y-5">
 						<div>
-							<label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+							<label className="onest mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500">
 								Workspace name
 							</label>
 							<input
@@ -89,9 +89,9 @@ export default function CreateWorkspaceModal({ isOpen, onClose }) {
 							/>
 						</div>
 						<div>
-							<label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+							<label className="onest mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500">
 								Description{" "}
-								<span className="font-normal normal-case text-slate-300">
+								<span className="font-normal normal-case text-slate-500">
 									(optional)
 								</span>
 							</label>
@@ -109,7 +109,7 @@ export default function CreateWorkspaceModal({ isOpen, onClose }) {
 						<button
 							type="button"
 							onClick={onClose}
-							className={`rounded-lg px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 ${FOCUS_RING}`}
+							className={`onest rounded-lg px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 ${FOCUS_RING}`}
 						>
 							Cancel
 						</button>
@@ -117,7 +117,7 @@ export default function CreateWorkspaceModal({ isOpen, onClose }) {
 							type="submit"
 							disabled={isSubmitting}
 							//className={`rounded-lg bg-teal-500 px-5 py-2 text-sm font-medium text-white shadow-sm transition-colors duration-150 hover:bg-teal-600 ${FOCUS_RING}`}
-							className={`flex items-center gap-2 rounded-lg bg-teal-500 px-5 py-2 text-sm font-medium text-white shadow-sm transition-colors duration-150 hover:bg-teal-600 ${FOCUS_RING} ${
+							className={`onest flex items-center gap-2 rounded-lg bg-teal-500 px-5 py-2 text-sm font-medium text-white shadow-sm transition-colors duration-150 hover:bg-teal-600 ${FOCUS_RING} ${
 								isSubmitting ? "opacity-75 cursor-not-allowed" : ""
 							}`}
 						>
