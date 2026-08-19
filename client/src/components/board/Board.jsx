@@ -146,18 +146,17 @@ export default function Board() {
 		try {
 			const res = await fetch(`${API_BASE}/tickets/${draggableId}/move`, {
 				method: "PATCH",
-					headers: {
-						"Content-Type": "application/json",
-						Authorization: `Bearer ${token}`,
-					},
-					body: JSON.stringify({
-						projectId: workspaceId,
-						fromStatus,
-						toStatus,
-						position: destination.index,
-					}),
+				headers: {
+					"Content-Type": "application/json",
+					Authorization: `Bearer ${token}`,
 				},
-			);
+				body: JSON.stringify({
+					projectId: workspaceId,
+					fromStatus,
+					toStatus,
+					position: destination.index,
+				}),
+			});
 
 			if (!res.ok) {
 				const errorData = await res.json();
@@ -278,7 +277,7 @@ export default function Board() {
 					<button
 						type="button"
 						onClick={() => setIsWipLimitModalOpen(true)}
-						className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+						className="inter flex items-center gap-1 px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
 						title="Set column WIP limits"
 					>
 						<Sliders className="h-3.5 w-3.5 text-slate-400" /> WIP Limits
@@ -286,7 +285,7 @@ export default function Board() {
 
 					<Link
 						to={`/workspace/${workspaceId}/dashboard`}
-						className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+						className="inter flex items-center gap-1 px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
 					>
 						<BarChart3 className="h-3.5 w-3.5 text-teal-600" /> Analytics
 					</Link>
@@ -294,7 +293,7 @@ export default function Board() {
 					<button
 						type="button"
 						onClick={() => setNewTicketCol("todo")}
-						className="flex items-center gap-1 px-3 py-1 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold transition-colors shadow-2xs"
+						className="onest flex items-center gap-1 px-3 py-1 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-semibold transition-colors shadow-2xs"
 					>
 						<Plus className="h-3.5 w-3.5" /> New Issue
 					</button>

@@ -11,6 +11,7 @@ import {
 	Moon,
 	HelpCircle,
 	Flame,
+	Settings,
 } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { useWorkspaceStore } from "../../store/useWorkspaceStore";
@@ -239,6 +240,17 @@ export default function Topbar({
 
 				{/* In-App Notifications Bell */}
 				<NotificationBell />
+
+				{/* Workspace Settings Link */}
+				{workspaceId && (
+					<Link
+						to={`/workspace/${workspaceId}/settings`}
+						className="p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+						title="Workspace Settings & Team Members"
+					>
+						<Settings className="h-4 w-4" />
+					</Link>
+				)}
 
 				{/* Dark Mode Toggle */}
 				<button

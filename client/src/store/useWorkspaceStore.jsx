@@ -200,17 +200,93 @@ export const useWorkspaceStore = create((set, get) => ({
 				headers: getAuthHeaders(),
 				body: JSON.stringify({ email, role }),
 			});
-			const data = await res.json();
+			const data = await safeJson(res);
 			if (!res.ok) throw new Error(data.message || "Failed to add member");
 
-			toast.success(`Added ${data.member.name} to workspace!`);
+			toast.success(`Added ${data.member?.name || email} to workspace!`);
 			if (get().currentWorkspace?.id === projectId) {
-				get().fetchWorkspaceById(projectId);
+				await get().fetchWorkspaceById(projectId);
 			}
 			return data;
 		} catch (err) {
 			console.error("Add member error:", err);
 			toast.error(err.message || "Could not add member");
+			throw err;
+		}
+	},
+
+	removeMember: async (projectId, userId) => {
+		try {
+			const res = await fetch(`${API_BASE}/projects/${projectId}/members/${userId}`, {
+				method: "DELETE",
+				headers: getAuthHeaders(),
+			});
+			const data = await safeJson(res);
+			if (!res.ok) throw new Error(data.message || "Failed to remove member");
+
+			toast.success("Team member removed");
+			if (get().currentWorkspace?.id === projectId) {
+				await get().fetchWorkspaceById(projectId);
+			}
+			return data;
+		} catch (err) {
+			console.error("Remove member error:", err);
+			toast.error(err.message || "Could not remove member");
+			throw err;
+		}
+	},
+
+	updateMemberRole: async (projectId, userId, role) => {
+		try {
+			const res = await fetch(`${API_BASE}/projects/${projectId}/members/${userId}`, {
+				method: "PATCH",
+				headers: getAuthHeaders(),
+				body: JSON.stringify({ role }),
+			});
+			const data = await safeJson(res);
+			if (!res.ok) throw new Error(data.message || "Failed to update role");
+
+			toast.success("Member role updated");
+			if (get().currentWorkspace?.id === projectId) {
+				await get().fetchWorkspaceById(projectId);
+			}
+			return data;
+		} catch (err) {
+			console.error("Update role error:", err);
+			toast.error(err.message || "Could not update member role");
+			throw err;
+		}
+	},
+
+	deleteWorkspace: async (projectId) => {
+		try {
+			const res = await fetch(`${API_BASE}/projects/${projectId}`, {
+				method: "DELETE",
+				headers: getAuthHeaders(),
+			});
+			const data = await safeJson(res);
+			if (!res.ok) throw new Error(data.message || "Failed to delete workspace");
+
+			toast.success("Workspace deleted");
+			await get().fetchWorkspaces();
+			return data;
+		} catch (err) {
+			console.error("Delete workspace error:", err);
+			toast.error(err.message || "Could not delete workspace");
+			throw err;
+		}
+	},
+
+	searchPlatformUsers: async (q) => {
+		try {
+			const res = await fetch(`${API_BASE}/projects/users/search?q=${encodeURIComponent(q)}`, {
+				headers: getAuthHeaders(),
+			});
+			const data = await safeJson(res);
+			return Array.isArray(data) ? data : [];
+		} catch (err) {
+			console.error("Search users error:", err);
+			return [];
 		}
 	},
 

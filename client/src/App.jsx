@@ -12,6 +12,7 @@ import WorkspacesDashboard from "./pages/WorkspacesDashboard";
 import MyWorkPage from "./pages/MyWorkPage";
 import ProjectDashboardPage from "./pages/ProjectDashboardPage";
 import SprintManagementPage from "./pages/SprintManagementPage";
+import WorkspaceSettingsPage from "./pages/WorkspaceSettingsPage";
 import MainLayout from "./layouts/MainLayout";
 import Board from "./components/board/Board";
 import { LoginPage, SignupPage } from "./pages/AuthPages";
@@ -53,6 +54,10 @@ const router = createBrowserRouter(
 						{
 							path: "workspace/:id/sprints",
 							element: <SprintManagementPage />,
+						},
+						{
+							path: "workspace/:id/settings",
+							element: <WorkspaceSettingsPage />,
 						},
 					],
 				},

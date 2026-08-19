@@ -309,3 +309,145 @@ exports.setWipLimits = async (req, res) => {
 
 	res.status(200).json({ message: "WIP limit updated", columnId, limit });
 };
+
+/* ------------------------------------------------------------------ */
+/* 7. REMOVE MEMBER FROM PROJECT                                      */
+/* Endpoint: DELETE /api/projects/:projectId/members/:userId          */
+/* ------------------------------------------------------------------ */
+exports.removeProjectMember = async (req, res) => {
+	const { projectId, userId } = req.params;
+	const actorId = req.user.userId;
+
+	const memberCheck = await pool.query(
+		"SELECT role FROM public.projects_members WHERE project_id = $1 AND user_id = $2",
+		[projectId, userId],
+	);
+
+	if (memberCheck.rows.length === 0) {
+		return res.status(404).json({ message: "Member not found in this project" });
+	}
+
+	if (memberCheck.rows[0].role === "owner") {
+		return res.status(400).json({ message: "Cannot remove project owner" });
+	}
+
+	await pool.query(
+		"DELETE FROM public.projects_members WHERE project_id = $1 AND user_id = $2",
+		[projectId, userId],
+	);
+
+	// Unassign any tasks in this project
+	await pool.query(
+		"UPDATE public.tasks SET assigned_to = NULL WHERE project_id = $1 AND assigned_to = $2",
+		[projectId, userId],
+	);
+
+	const io = req.app.get("io");
+	if (io) {
+		io.to(projectId).emit("member_removed", { projectId, userId });
+	}
+
+	res.status(200).json({ message: "Member removed from workspace", userId });
+};
+
+/* ------------------------------------------------------------------ */
+/* 8. UPDATE MEMBER ROLE                                              */
+/* Endpoint: PATCH /api/projects/:projectId/members/:userId           */
+/* ------------------------------------------------------------------ */
+exports.updateMemberRole = async (req, res) => {
+	const { projectId, userId } = req.params;
+	const { role } = req.body;
+
+	if (!role || !["owner", "admin", "member", "viewer"].includes(role)) {
+		return res.status(400).json({ message: "Invalid role specified" });
+	}
+
+	await pool.query(
+		"UPDATE public.projects_members SET role = $1 WHERE project_id = $2 AND user_id = $3",
+		[role, projectId, userId],
+	);
+
+	res.status(200).json({ message: "Role updated successfully", userId, role });
+};
+
+/* ------------------------------------------------------------------ */
+/* 9. DELETE PROJECT / WORKSPACE                                      */
+/* Endpoint: DELETE /api/projects/:projectId                          */
+/* ------------------------------------------------------------------ */
+exports.deleteProject = async (req, res) => {
+	const { projectId } = req.params;
+	const userId = req.user.userId;
+
+	const memberRes = await pool.query(
+		"SELECT role FROM public.projects_members WHERE project_id = $1 AND user_id = $2",
+		[projectId, userId],
+	);
+
+	if (
+		memberRes.rows.length === 0 ||
+		!["owner", "admin"].includes(memberRes.rows[0].role)
+	) {
+		return res.status(403).json({
+			message: "Only workspace owners/admins can delete a workspace",
+		});
+	}
+
+	const client = await pool.connect();
+	try {
+		await client.query("BEGIN");
+		await client.query(
+			"DELETE FROM public.task_dependencies WHERE task_id IN (SELECT id FROM public.tasks WHERE project_id = $1)",
+			[projectId],
+		);
+		await client.query(
+			"DELETE FROM public.subtasks WHERE task_id IN (SELECT id FROM public.tasks WHERE project_id = $1)",
+			[projectId],
+		);
+		await client.query("DELETE FROM public.comments WHERE project_id = $1", [
+			projectId,
+		]);
+		await client.query("DELETE FROM public.notifications WHERE project_id = $1", [
+			projectId,
+		]);
+		await client.query("DELETE FROM public.project_wip_limits WHERE project_id = $1", [
+			projectId,
+		]);
+		await client.query("DELETE FROM public.tasks WHERE project_id = $1", [
+			projectId,
+		]);
+		await client.query("DELETE FROM public.sprints WHERE project_id = $1", [
+			projectId,
+		]);
+		await client.query("DELETE FROM public.projects_members WHERE project_id = $1", [
+			projectId,
+		]);
+		await client.query("DELETE FROM public.projects WHERE id = $1", [
+			projectId,
+		]);
+		await client.query("COMMIT");
+
+		res.status(200).json({ message: "Workspace deleted successfully", projectId });
+	} catch (err) {
+		await client.query("ROLLBACK");
+		throw err;
+	} finally {
+		client.release();
+	}
+};
+
+/* ------------------------------------------------------------------ */
+/* 10. SEARCH ALL PLATFORM USERS (For Member Invitations)             */
+/* Endpoint: GET /api/projects/users/search                           */
+/* ------------------------------------------------------------------ */
+exports.searchAllUsers = async (req, res) => {
+	const q = req.query.q || "";
+	const result = await pool.query(
+		`SELECT id, name, email, avatar_url 
+         FROM public.users 
+         WHERE name ILIKE $1 OR email ILIKE $1 
+         ORDER BY name ASC 
+         LIMIT 20`,
+		[`%${q.trim()}%`],
+	);
+	res.status(200).json(result.rows);
+};

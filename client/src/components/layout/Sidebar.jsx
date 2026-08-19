@@ -205,6 +205,20 @@ export default function Sidebar() {
 							<BarChart3 className="h-4 w-4 shrink-0 text-emerald-400" />
 							{isExpanded ? <span>Project Analytics</span> : null}
 						</Link>
+
+						<Link
+							to={`/workspace/${currentWorkspaceId}/settings`}
+							className={`flex items-center gap-3 rounded-xl py-2 text-xs font-medium transition-all ${
+								isExpanded ? "w-full px-3" : "h-10 w-10 justify-center"
+							} ${
+								location.pathname.includes("/settings")
+									? "border-l-2 border-teal-400 bg-gradient-to-r from-teal-500/20 to-transparent text-teal-300 font-bold"
+									: "text-slate-400 hover:bg-slate-800/60 hover:text-white"
+							}`}
+						>
+							<Settings className="h-4 w-4 shrink-0 text-violet-400" />
+							{isExpanded ? <span>Settings & Team</span> : null}
+						</Link>
 					</div>
 				</>
 			)}
