@@ -2,11 +2,18 @@ const { Pool } = require("pg");
 const path = require("path");
 require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 
+const isSSLRequired =
+	process.env.DATABASE_URL &&
+	(process.env.DATABASE_URL.includes("neon.tech") ||
+		process.env.DATABASE_URL.includes("sslmode=require") ||
+		process.env.NODE_ENV === "production");
+
 const pool = new Pool({
 	connectionString:
 		process.env.DATABASE_URL ||
 		"postgresql://postgres:SANSKWERTY@127.0.0.1:5432/agile_task_manager",
-	connectionTimeoutMillis: 5000,
+	connectionTimeoutMillis: 10000,
+	ssl: isSSLRequired ? { rejectUnauthorized: false } : false,
 });
 
 pool.on("connect", () => {
