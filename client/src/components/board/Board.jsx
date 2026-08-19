@@ -12,7 +12,12 @@ import { Loader2, Flame, Sliders, BarChart3, Plus } from "lucide-react";
 import WipLimitModal from "../modals/WipLimitModal";
 import CreateSprintModal from "../modals/CreateSprintModal";
 
-const socket = io("http://localhost:5000");
+const socket = io("http://localhost:5000", {
+	autoConnect: true,
+	reconnectionAttempts: 5,
+	reconnectionDelay: 2000,
+	transports: ["websocket", "polling"],
+});
 
 export default function Board() {
 	const { id: workspaceId } = useParams();

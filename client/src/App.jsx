@@ -17,6 +17,7 @@ import Board from "./components/board/Board";
 import { LoginPage, SignupPage } from "./pages/AuthPages";
 import RootLayout from "./layouts/RootLayout";
 import LegalPage from "./pages/LegalPage";
+import ErrorBoundary from "./components/common/ErrorBoundary";
 
 function ProtectedRoute({ children }) {
 	const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -28,6 +29,7 @@ const router = createBrowserRouter(
 	[
 		{
 			element: <RootLayout />,
+			errorElement: <ErrorBoundary />,
 			children: [
 				{ path: "/", element: <LandingPage /> },
 				{ path: "/login", element: <LoginPage /> },
