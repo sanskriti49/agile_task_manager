@@ -11,6 +11,15 @@ const getAuthHeaders = () => {
 	};
 };
 
+const safeJson = async (res) => {
+	const text = await res.text();
+	try {
+		return JSON.parse(text);
+	} catch (e) {
+		return { message: text || `HTTP ${res.status} ${res.statusText}` };
+	}
+};
+
 export const useWorkspaceStore = create((set, get) => ({
 	// Workspaces & Board
 	workspaces: [],
@@ -89,10 +98,10 @@ export const useWorkspaceStore = create((set, get) => ({
 			const res = await fetch(`${API_BASE}/projects`, {
 				headers: getAuthHeaders(),
 			});
-			const data = await res.json();
+			const data = await safeJson(res);
 			if (!res.ok) throw new Error(data.message || "Failed to fetch workspaces");
 
-			const normalized = data.map((ws) => ({
+			const normalized = (Array.isArray(data) ? data : []).map((ws) => ({
 				id: ws.id,
 				name: ws.name,
 				description: ws.description,
@@ -119,7 +128,7 @@ export const useWorkspaceStore = create((set, get) => ({
 			const res = await fetch(`${API_BASE}/projects/${projectId}`, {
 				headers: getAuthHeaders(),
 			});
-			const data = await res.json();
+			const data = await safeJson(res);
 			if (!res.ok) throw new Error(data.message || "Failed to load board details");
 
 			const workspaceTickets = data.tasks || [];
@@ -606,7 +615,7 @@ export const useWorkspaceStore = create((set, get) => ({
 			const res = await fetch(`${API_BASE}/notifications`, {
 				headers: getAuthHeaders(),
 			});
-			const data = await res.json();
+			const data = await safeJson(res);
 			if (res.ok) {
 				set({
 					notifications: data.notifications || [],
@@ -660,7 +669,7 @@ export const useWorkspaceStore = create((set, get) => ({
 			const res = await fetch(`${API_BASE}/analytics/projects/${projectId}/analytics`, {
 				headers: getAuthHeaders(),
 			});
-			const data = await res.json();
+			const data = await safeJson(res);
 			if (res.ok) {
 				set({ projectAnalytics: data });
 				return data;
@@ -678,7 +687,7 @@ export const useWorkspaceStore = create((set, get) => ({
 			const res = await fetch(`${API_BASE}/analytics/my-work`, {
 				headers: getAuthHeaders(),
 			});
-			const data = await res.json();
+			const data = await safeJson(res);
 			if (res.ok) {
 				set({ myWorkData: data });
 				return data;
@@ -704,7 +713,7 @@ export const useWorkspaceStore = create((set, get) => ({
 			const res = await fetch(`${API_BASE}/search?q=${encodeURIComponent(query.trim())}`, {
 				headers: getAuthHeaders(),
 			});
-			const data = await res.json();
+			const data = await safeJson(res);
 			if (res.ok) {
 				set({ searchResults: data, isSearching: false });
 			}

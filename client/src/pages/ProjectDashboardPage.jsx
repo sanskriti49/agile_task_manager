@@ -22,8 +22,12 @@ export default function ProjectDashboardPage() {
 	const currentWorkspace = useWorkspaceStore((state) => state.currentWorkspace);
 	const projectAnalytics = useWorkspaceStore((state) => state.projectAnalytics);
 	const analyticsLoading = useWorkspaceStore((state) => state.analyticsLoading);
-	const fetchProjectAnalytics = useWorkspaceStore((state) => state.fetchProjectAnalytics);
-	const fetchWorkspaceById = useWorkspaceStore((state) => state.fetchWorkspaceById);
+	const fetchProjectAnalytics = useWorkspaceStore(
+		(state) => state.fetchProjectAnalytics,
+	);
+	const fetchWorkspaceById = useWorkspaceStore(
+		(state) => state.fetchWorkspaceById,
+	);
 
 	useEffect(() => {
 		if (projectId) {
@@ -36,7 +40,9 @@ export default function ProjectDashboardPage() {
 		return (
 			<div className="flex flex-col items-center justify-center min-h-[500px] text-slate-400">
 				<Loader2 className="h-8 w-8 animate-spin text-teal-600 mb-2" />
-				<span className="font-mono-ui text-xs">Computing project analytics from database...</span>
+				<span className="display text-xs">
+					Computing project analytics from database...
+				</span>
 			</div>
 		);
 	}
@@ -60,15 +66,16 @@ export default function ProjectDashboardPage() {
 					<div>
 						<Link
 							to={`/workspace/${projectId}`}
-							className="inline-flex items-center gap-1 text-xs font-mono-ui font-semibold text-teal-600 dark:text-teal-400 hover:underline mb-1"
+							className="inline-flex items-center gap-1 text-xs font-semibold text-teal-600 dark:text-teal-400 hover:underline mb-1"
 						>
 							<ArrowLeft className="h-3.5 w-3.5" /> Back to Board
 						</Link>
 						<h1 className="display text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
 							{currentWorkspace?.name || "Project"} Analytics
 						</h1>
-						<p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-mono-ui">
-							Real-time delivery metrics, velocity charts, and workload distribution
+						<p className="work-sans text-xs text-slate-500 dark:text-slate-400 mt-1 font-mono-ui">
+							Real-time delivery metrics, velocity charts, and workload
+							distribution
 						</p>
 					</div>
 
@@ -77,7 +84,8 @@ export default function ProjectDashboardPage() {
 							to={`/workspace/${projectId}/sprints`}
 							className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800"
 						>
-							<Flame className="h-3.5 w-3.5 text-amber-500" /> Sprints & Burndown
+							<Flame className="h-3.5 w-3.5 text-amber-500" /> Sprints &
+							Burndown
 						</Link>
 					</div>
 				</div>
@@ -85,9 +93,11 @@ export default function ProjectDashboardPage() {
 				{/* KPI Highlights */}
 				<div className="grid grid-cols-2 sm:grid-cols-4 gap-4 my-6 font-mono-ui">
 					{/* Completion Rate */}
-					<div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs">
+					<div className="onest bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs">
 						<div className="flex items-center justify-between text-teal-600 mb-2">
-							<span className="text-xs font-bold uppercase tracking-wider">Completion</span>
+							<span className="text-xs font-bold uppercase tracking-wider">
+								Completion
+							</span>
 							<CheckCircle2 className="h-4 w-4" />
 						</div>
 						<div className="flex items-baseline gap-2">
@@ -107,39 +117,51 @@ export default function ProjectDashboardPage() {
 					</div>
 
 					{/* In Progress / Active */}
-					<div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs">
+					<div className="onest bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs">
 						<div className="flex items-center justify-between text-amber-500 mb-2">
-							<span className="text-xs font-bold uppercase tracking-wider">In Progress</span>
+							<span className="text-xs font-bold uppercase tracking-wider">
+								In Progress
+							</span>
 							<Clock className="h-4 w-4" />
 						</div>
 						<span className="text-3xl font-extrabold text-amber-600 dark:text-amber-400">
 							{summary.in_progress_tasks || 0}
 						</span>
-						<p className="text-xs text-slate-400 mt-2">Active development items</p>
+						<p className="work-sans text-xs text-slate-400 mt-2">
+							Active development items
+						</p>
 					</div>
 
 					{/* High Priority */}
-					<div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs">
+					<div className="onest bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs">
 						<div className="flex items-center justify-between text-rose-500 mb-2">
-							<span className="text-xs font-bold uppercase tracking-wider">High Priority</span>
+							<span className="text-xs font-bold uppercase tracking-wider">
+								High Priority
+							</span>
 							<AlertTriangle className="h-4 w-4" />
 						</div>
 						<span className="text-3xl font-extrabold text-rose-600 dark:text-rose-400">
 							{summary.high_priority_tasks || 0}
 						</span>
-						<p className="text-xs text-slate-400 mt-2">Critical blockers & urgent fixes</p>
+						<p className="work-sans text-xs text-slate-400 mt-2">
+							Critical blockers & urgent fixes
+						</p>
 					</div>
 
 					{/* Overdue */}
-					<div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs">
+					<div className="onest bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs">
 						<div className="flex items-center justify-between text-rose-600 mb-2">
-							<span className="text-xs font-bold uppercase tracking-wider">Overdue</span>
+							<span className="text-xs font-bold uppercase tracking-wider">
+								Overdue
+							</span>
 							<Clock className="h-4 w-4" />
 						</div>
 						<span className="text-3xl font-extrabold text-rose-600 dark:text-rose-400">
 							{summary.overdue_tasks || 0}
 						</span>
-						<p className="text-xs text-slate-400 mt-2">Tasks past deadline</p>
+						<p className="work-sans text-xs text-slate-400 mt-2">
+							Tasks past deadline
+						</p>
 					</div>
 				</div>
 
@@ -153,7 +175,7 @@ export default function ProjectDashboardPage() {
 								</div>
 								<div>
 									<div className="flex items-center gap-2">
-										<span className="font-mono-ui text-[10px] font-bold uppercase bg-amber-200 dark:bg-amber-900 text-amber-800 dark:text-amber-300 px-2 py-0.5 rounded-full">
+										<span className="text-[10px] font-bold uppercase bg-amber-200 dark:bg-amber-900 text-amber-800 dark:text-amber-300 px-2 py-0.5 rounded-full">
 											Active Sprint
 										</span>
 										<h3 className="display font-bold text-base text-slate-900 dark:text-slate-100">
@@ -166,7 +188,7 @@ export default function ProjectDashboardPage() {
 								</div>
 							</div>
 
-							<div className="flex items-center gap-4 font-mono-ui text-xs">
+							<div className="flex items-center gap-4 text-xs">
 								<div>
 									<span className="text-slate-400">Progress: </span>
 									<span className="font-bold text-slate-800 dark:text-slate-200">
@@ -196,12 +218,17 @@ export default function ProjectDashboardPage() {
 									Tasks by Status
 								</h3>
 							</div>
-							<span className="text-xs text-slate-400">{totalTasks} total</span>
+							<span className="onest text-xs text-slate-400">
+								{totalTasks} total
+							</span>
 						</div>
 
 						<div className="space-y-3">
 							{byStatus.map((item) => {
-								const pct = totalTasks > 0 ? Math.round((item.count / totalTasks) * 100) : 0;
+								const pct =
+									totalTasks > 0
+										? Math.round((item.count / totalTasks) * 100)
+										: 0;
 								const colorMap = {
 									backlog: "bg-slate-400",
 									todo: "bg-indigo-500",
@@ -250,7 +277,8 @@ export default function ProjectDashboardPage() {
 									(p) => (p.priority || "").toLowerCase() === prio,
 								);
 								const count = match ? match.count : 0;
-								const pct = totalTasks > 0 ? Math.round((count / totalTasks) * 100) : 0;
+								const pct =
+									totalTasks > 0 ? Math.round((count / totalTasks) * 100) : 0;
 								const color =
 									prio === "high"
 										? "bg-rose-500"
@@ -260,7 +288,7 @@ export default function ProjectDashboardPage() {
 
 								return (
 									<div key={prio}>
-										<div className="flex items-center justify-between text-xs mb-1">
+										<div className="inter flex items-center justify-between text-xs mb-1">
 											<span className="font-semibold uppercase text-slate-600 dark:text-slate-300">
 												{prio} Priority
 											</span>
@@ -293,7 +321,8 @@ export default function ProjectDashboardPage() {
 
 						{completedOverTime.length === 0 ? (
 							<div className="py-12 text-center text-xs text-slate-400 font-mono-ui">
-								No tasks marked done in the last 14 days. Complete issues to see velocity trends!
+								No tasks marked done in the last 14 days. Complete issues to see
+								velocity trends!
 							</div>
 						) : (
 							<div className="h-40 flex items-end gap-2 pt-4 border-b border-slate-100 dark:border-slate-800 pb-2">
@@ -302,7 +331,10 @@ export default function ProjectDashboardPage() {
 										1,
 										...completedOverTime.map((x) => x.count),
 									);
-									const heightPercent = Math.max(15, Math.round((d.count / maxCount) * 100));
+									const heightPercent = Math.max(
+										15,
+										Math.round((d.count / maxCount) * 100),
+									);
 
 									return (
 										<div
@@ -337,10 +369,12 @@ export default function ProjectDashboardPage() {
 									Team Workload Distribution
 								</h3>
 							</div>
-							<span className="text-xs text-slate-400">{workload.length} member(s)</span>
+							<span className="onest text-xs text-slate-400">
+								{workload.length} member(s)
+							</span>
 						</div>
 
-						<div className="space-y-3 max-h-56 overflow-y-auto pr-1">
+						<div className=" space-y-3 max-h-56 overflow-y-auto pr-1">
 							{workload.map((m) => {
 								const initials = (m.name || "User")
 									.split(" ")
@@ -363,20 +397,22 @@ export default function ProjectDashboardPage() {
 												{initials}
 											</div>
 											<div className="min-w-0">
-												<p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
+												<p className="onest text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
 													{m.name}
 												</p>
-												<span className="text-[10px] text-slate-400 uppercase">
+												<span className="work-sans text-[10px] text-slate-400 uppercase">
 													{m.role}
 												</span>
 											</div>
 										</div>
 
-										<div className="flex items-center gap-3 text-xs">
+										<div className="onest flex items-center gap-3 text-xs">
 											<span className="text-amber-600 dark:text-amber-400 font-bold">
 												{m.active_tasks} active
 											</span>
-											<span className="text-slate-300 dark:text-slate-700">|</span>
+											<span className="text-slate-300 dark:text-slate-700">
+												|
+											</span>
 											<span className="text-emerald-600 dark:text-emerald-400 font-bold">
 												{m.completed_tasks} done
 											</span>
