@@ -168,7 +168,9 @@ export default function NewTicketModal() {
 	const [title, setTitle] = useState("");
 	const [description, setDescription] = useState("");
 	const [priority, setPriority] = useState("medium");
-	const [assignee, setAssignee] = useState("Unassigned");
+	const [assigneeId, setAssigneeId] = useState(null);
+	const [assigneeName, setAssigneeName] = useState("Unassigned");
+	const [storyPoints, setStoryPoints] = useState(1);
 	const [due, setDue] = useState(null);
 	const [tags, setTags] = useState([]);
 	const [tagDraft, setTagDraft] = useState("");
@@ -187,7 +189,9 @@ export default function NewTicketModal() {
 		setTitle("");
 		setDescription("");
 		setPriority("medium");
-		setAssignee(membersList[0]?.name || "Unassigned");
+		setAssigneeId(membersList[0]?.id || null);
+		setAssigneeName(membersList[0]?.name || "Unassigned");
+		setStoryPoints(1);
 		setDue(null);
 		setTags([]);
 		setTagDraft("");
@@ -270,8 +274,10 @@ export default function NewTicketModal() {
 				description,
 				status: newTicketCol,
 				priority,
+				assigned_to: assigneeId,
+				story_points: storyPoints,
 				tags,
-				due_date: due ? due.value : null, // Send ISO timestamp string to backend/PostgreSQL
+				due_date: due ? due.value : null,
 			});
 			setNewTicketCol(null);
 		} finally {
@@ -430,37 +436,51 @@ export default function NewTicketModal() {
 								>
 									<span
 										className={`h-4 w-4 rounded-full ${avatarColor(
-											assignee,
+											assigneeName,
 										)} font-mono-ui text-[9px] font-bold text-white flex items-center justify-center shrink-0`}
 									>
-										{initials(assignee)}
+										{initials(assigneeName)}
 									</span>
-									<span className="truncate max-w-[100px]">{assignee}</span>
+									<span className="truncate max-w-[100px]">{assigneeName}</span>
 								</MetaButton>
 								{openPopover === "assignee" && (
 									<PopoverPanel width="w-48">
-										{[
-											"Sanskriti Gupta",
-											"Aria Chen",
-											"Rohan Mehta",
-											"Priya Nair",
-										].map((name) => (
+										<PopoverItem
+											selected={!assigneeId}
+											onClick={() => {
+												setAssigneeId(null);
+												setAssigneeName("Unassigned");
+												setOpenPopover(null);
+											}}
+										>
+											<span className="text-slate-400">Unassigned</span>
+										</PopoverItem>
+										{(membersList.length > 0
+											? membersList
+											: [
+													{ id: "u1", name: "Sanskriti Gupta" },
+													{ id: "u2", name: "Aria Chen" },
+													{ id: "u3", name: "Rohan Mehta" },
+													{ id: "u4", name: "Priya Nair" },
+												]
+										).map((m) => (
 											<PopoverItem
-												key={name}
-												selected={assignee === name}
+												key={m.id}
+												selected={assigneeId === m.id || assigneeName === m.name}
 												onClick={() => {
-													setAssignee(name);
+													setAssigneeId(m.id);
+													setAssigneeName(m.name);
 													setOpenPopover(null);
 												}}
 											>
 												<span
 													className={`h-4 w-4 rounded-full ${avatarColor(
-														name,
+														m.name,
 													)} font-mono-ui text-[9px] font-bold text-white flex items-center justify-center shrink-0`}
 												>
-													{initials(name)}
+													{initials(m.name)}
 												</span>
-												<span>{name}</span>
+												<span>{m.name}</span>
 											</PopoverItem>
 										))}
 									</PopoverPanel>

@@ -1,8 +1,12 @@
 const { Pool } = require("pg");
-require("dotenv").config();
+const path = require("path");
+require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 
 const pool = new Pool({
-	connectionString: process.env.DATABASE_URL,
+	connectionString:
+		process.env.DATABASE_URL ||
+		"postgresql://postgres:SANSKWERTY@127.0.0.1:5432/agile_task_manager",
+	connectionTimeoutMillis: 5000,
 });
 
 pool.on("connect", () => {
@@ -14,15 +18,34 @@ pool.on("error", (err) => {
 	process.exit(-1);
 });
 
+const fs = require("fs");
+
 const ensureUUIDExtension = async () => {
 	try {
 		await pool.query('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"');
-		console.log("UUID extension ready");
+		await pool.query('CREATE EXTENSION IF NOT EXISTS "pgcrypto"');
 	} catch (err) {
-		console.warn(
-			"Could not create uuid-ossp extension – maybe already exists or not needed.",
-		);
+		// ignore if already exists
 	}
 };
 
-module.exports = { pool, ensureUUIDExtension };
+const runMigrations = async () => {
+	try {
+		await ensureUUIDExtension();
+		const migrationsDir = path.join(__dirname, "../migrations");
+		if (fs.existsSync(migrationsDir)) {
+			const files = fs.readdirSync(migrationsDir).sort();
+			for (const file of files) {
+				if (file.endsWith(".sql")) {
+					const sql = fs.readFileSync(path.join(migrationsDir, file), "utf8");
+					await pool.query(sql);
+					console.log(`✅ Applied migration: ${file}`);
+				}
+			}
+		}
+	} catch (err) {
+		console.error("Migration error:", err.message);
+	}
+};
+
+module.exports = { pool, ensureUUIDExtension, runMigrations };

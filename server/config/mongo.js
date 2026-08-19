@@ -1,13 +1,15 @@
 const mongoose = require("mongoose");
-require("dotenv").config();
+const path = require("path");
+require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 
 const connectMongo = async () => {
 	try {
-		await mongoose.connect(process.env.MONGO_URI);
+		await mongoose.connect(process.env.MONGO_URI, {
+			serverSelectionTimeoutMS: 3000,
+		});
 		console.log("✅ MongoDB connected");
 	} catch (err) {
-		console.error("MongoDB connection failed:", err);
-		process.exit(1);
+		console.warn("⚠️ MongoDB connection warning (Activity logs will be in fallback mode):", err.message);
 	}
 };
 

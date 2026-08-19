@@ -4,7 +4,11 @@
 	"description": "",
 	"main": "index.js",
 	"scripts": {
-		"dev": "nodemon server.js"
+		"dev": "nodemon server.js",
+		"start": "node server.js",
+		"migrate": "node -e \"require('./config/db').runMigrations().then(() => process.exit(0))\"",
+		"seed": "node scripts/seed.js",
+		"test": "node --test tests/*.test.js"
 	},
 	"keywords": [],
 	"author": "",

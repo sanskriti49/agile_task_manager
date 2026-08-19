@@ -1,3 +1,4 @@
+import React from "react";
 import {
 	createBrowserRouter,
 	RouterProvider,
@@ -8,6 +9,9 @@ import { Toaster } from "sonner";
 import { useAuthStore } from "./store/useAuthStore";
 import LandingPage from "./pages/LandingPage";
 import WorkspacesDashboard from "./pages/WorkspacesDashboard";
+import MyWorkPage from "./pages/MyWorkPage";
+import ProjectDashboardPage from "./pages/ProjectDashboardPage";
+import SprintManagementPage from "./pages/SprintManagementPage";
 import MainLayout from "./layouts/MainLayout";
 import Board from "./components/board/Board";
 import { LoginPage, SignupPage } from "./pages/AuthPages";
@@ -38,7 +42,10 @@ const router = createBrowserRouter(
 					),
 					children: [
 						{ path: "dashboard", element: <WorkspacesDashboard /> },
+						{ path: "my-work", element: <MyWorkPage /> },
 						{ path: "workspace/:id", element: <Board /> },
+						{ path: "workspace/:id/dashboard", element: <ProjectDashboardPage /> },
+						{ path: "workspace/:id/sprints", element: <SprintManagementPage /> },
 					],
 				},
 				{ path: "*", element: <Navigate to="/" replace /> },
@@ -55,7 +62,7 @@ const router = createBrowserRouter(
 
 export default function App() {
 	return (
-		<GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+		<GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || "google-client-id"}>
 			<Toaster position="top-right" richColors closeButton />
 			<RouterProvider router={router} />
 		</GoogleOAuthProvider>

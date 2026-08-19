@@ -8,7 +8,6 @@ const ActivityLog = require("../models/ActivityLog");
 exports.getUserProjects = async (req, res) => {
 	const userId = req.user.userId;
 
-	// Fetch projects where the user is a member, along with active & total task counts
 	const query = `
         SELECT 
             p.id,
@@ -39,7 +38,7 @@ exports.createProject = async (req, res) => {
 	const { name, description } = req.body;
 	const userId = req.user.userId;
 
-	if (!name) {
+	if (!name || !name.trim()) {
 		return res.status(400).json({ message: "Project name is required" });
 	}
 
@@ -64,9 +63,23 @@ exports.createProject = async (req, res) => {
 			[newProject.id, userId],
 		);
 
+		// C. Set default WIP limits
+		const defaultLimits = [
+			{ col: 'todo', limit: 10 },
+			{ col: 'inprogress', limit: 4 },
+			{ col: 'done', limit: 20 },
+			{ col: 'backlog', limit: 30 },
+		];
+		for (const d of defaultLimits) {
+			await client.query(
+				"INSERT INTO public.project_wip_limits (project_id, column_id, wip_limit) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING",
+				[newProject.id, d.col, d.limit],
+			);
+		}
+
 		await client.query("COMMIT");
 
-		// C. Log Activity in MongoDB
+		// D. Log Activity in MongoDB
 		const userRes = await pool.query(
 			"SELECT name FROM public.users WHERE id = $1",
 			[userId],
@@ -78,7 +91,7 @@ exports.createProject = async (req, res) => {
 			userId,
 			userName,
 			action: "PROJECT_MEMBER_ADDED",
-			message: `Created project "${newProject.name}"`,
+			message: `Created workspace "${newProject.name}"`,
 			newValue: { role: "owner" },
 		}).catch((err) => console.error("MongoDB ActivityLog Error:", err));
 
@@ -101,7 +114,7 @@ exports.getProjectById = async (req, res) => {
 	// A. Fetch Project details and member list
 	const projectRes = await pool.query(
 		`SELECT p.*, 
-                json_agg(json_build_object('id', u.id, 'name', u.name, 'email', u.email, 'avatar', u.avatar_url, 'role', pm.role)) AS members
+                json_agg(DISTINCT jsonb_build_object('id', u.id, 'name', u.name, 'email', u.email, 'avatar', u.avatar_url, 'role', pm.role)) AS members
          FROM public.projects p
          JOIN public.projects_members pm ON p.id = pm.project_id
          JOIN public.users u ON pm.user_id = u.id
@@ -116,19 +129,51 @@ exports.getProjectById = async (req, res) => {
 
 	const project = projectRes.rows[0];
 
-	// B. Fetch all Tasks associated with this project
+	// B. Fetch all Tasks with subtasks counts, comments counts, and blockers
 	const tasksRes = await pool.query(
-		`SELECT t.*, u.name AS assignee_name, u.avatar_url AS assignee_avatar
+		`SELECT 
+            t.*,
+            u.name AS assignee_name,
+            u.avatar_url AS assignee_avatar,
+            s.name AS sprint_name,
+            s.status AS sprint_status,
+            COUNT(DISTINCT st.id)::INT AS total_subtasks,
+            COUNT(DISTINCT CASE WHEN st.is_completed = TRUE THEN st.id END)::INT AS completed_subtasks,
+            COUNT(DISTINCT c.id)::INT AS comments_count,
+            COUNT(DISTINCT td.id)::INT AS blockers_count
          FROM public.tasks t
          LEFT JOIN public.users u ON t.assigned_to = u.id
+         LEFT JOIN public.sprints s ON t.sprint_id = s.id
+         LEFT JOIN public.subtasks st ON t.id = st.task_id
+         LEFT JOIN public.comments c ON t.id = c.task_id
+         LEFT JOIN public.task_dependencies td ON t.id = td.depends_on_task_id AND td.dependency_type = 'blocks'
          WHERE t.project_id = $1
+         GROUP BY t.id, u.name, u.avatar_url, s.name, s.status
          ORDER BY t.position ASC, t.created_at DESC`,
+		[projectId],
+	);
+
+	// C. Fetch WIP limits
+	const wipRes = await pool.query(
+		"SELECT column_id, wip_limit FROM public.project_wip_limits WHERE project_id = $1",
+		[projectId],
+	);
+	const wipLimits = {};
+	wipRes.rows.forEach((r) => {
+		wipLimits[r.column_id] = r.wip_limit;
+	});
+
+	// D. Fetch Active Sprint
+	const sprintRes = await pool.query(
+		"SELECT * FROM public.sprints WHERE project_id = $1 AND status = 'active' LIMIT 1",
 		[projectId],
 	);
 
 	res.status(200).json({
 		...project,
 		tasks: tasksRes.rows,
+		wipLimits,
+		activeSprint: sprintRes.rows[0] || null,
 	});
 };
 
@@ -145,7 +190,6 @@ exports.addProjectMember = async (req, res) => {
 		return res.status(400).json({ message: "User email is required" });
 	}
 
-	// A. Find user by email
 	const userRes = await pool.query(
 		"SELECT id, name, email, avatar_url FROM public.users WHERE email = $1",
 		[email.toLowerCase().trim()],
@@ -157,7 +201,6 @@ exports.addProjectMember = async (req, res) => {
 
 	const targetUser = userRes.rows[0];
 
-	// B. Check if user is already a member
 	const existingMember = await pool.query(
 		"SELECT * FROM public.projects_members WHERE project_id = $1 AND user_id = $2",
 		[projectId, targetUser.id],
@@ -169,20 +212,30 @@ exports.addProjectMember = async (req, res) => {
 			.json({ message: "User is already a member of this project" });
 	}
 
-	// C. Add user to projects_members
 	await pool.query(
 		"INSERT INTO public.projects_members (project_id, user_id, role) VALUES ($1, $2, $3)",
 		[projectId, targetUser.id, role],
 	);
 
-	// D. Fetch actor name for audit log
 	const actorRes = await pool.query(
 		"SELECT name FROM public.users WHERE id = $1",
 		[actorId],
 	);
 	const actorName = actorRes.rows[0]?.name || "Admin";
 
-	// E. Log Activity in MongoDB
+	// Notification to target user
+	await pool.query(
+		`INSERT INTO public.notifications (user_id, actor_id, project_id, type, title, message)
+         VALUES ($1, $2, $3, 'assignment', $4, $5)`,
+		[
+			targetUser.id,
+			actorId,
+			projectId,
+			"Added to Project",
+			`${actorName} added you to the project as ${role}.`,
+		],
+	);
+
 	await ActivityLog.create({
 		projectId,
 		userId: actorId,
@@ -192,7 +245,6 @@ exports.addProjectMember = async (req, res) => {
 		newValue: { addedUserId: targetUser.id, role },
 	}).catch((err) => console.error("MongoDB ActivityLog Error:", err));
 
-	// F. Emit Socket.io event if connected
 	const io = req.app.get("io");
 	if (io) {
 		io.to(projectId).emit("member_added", {
@@ -234,4 +286,26 @@ exports.updateProject = async (req, res) => {
 	}
 
 	res.status(200).json(result.rows[0]);
+};
+
+/* ------------------------------------------------------------------ */
+/* 6. SET WIP LIMITS                                                  */
+/* Endpoint: PUT /api/projects/:projectId/wip-limits                   */
+/* ------------------------------------------------------------------ */
+exports.setWipLimits = async (req, res) => {
+	const { projectId } = req.params;
+	const { columnId, limit } = req.body;
+
+	if (!columnId || limit === undefined) {
+		return res.status(400).json({ message: "columnId and limit are required" });
+	}
+
+	await pool.query(
+		`INSERT INTO public.project_wip_limits (project_id, column_id, wip_limit)
+         VALUES ($1, $2, $3)
+         ON CONFLICT (project_id, column_id) DO UPDATE SET wip_limit = EXCLUDED.wip_limit`,
+		[projectId, columnId, parseInt(limit, 10)],
+	);
+
+	res.status(200).json({ message: "WIP limit updated", columnId, limit });
 };

@@ -13,27 +13,67 @@ const getAuthHeaders = () => {
 };
 
 export const useWorkspaceStore = create((set, get) => ({
+	// Workspaces & Board
 	workspaces: [],
 	currentWorkspace: null,
 	tickets: [],
+	wipLimits: {},
 	loading: false,
 	error: null,
 
-	// Modal & Drawer Global State
+	// Sprints
+	sprints: [],
+	activeSprint: null,
+	burndownData: null,
+	sprintsLoading: false,
+
+	// Analytics & My Work
+	projectAnalytics: null,
+	analyticsLoading: false,
+	myWorkData: null,
+	myWorkLoading: false,
+
+	// Notifications
+	notifications: [],
+	unreadCount: 0,
+	notificationsOpen: false,
+	setNotificationsOpen: (open) => set({ notificationsOpen: open }),
+
+	// Real-time Collaborator Presence
+	onlineCollaborators: [],
+	setOnlineCollaborators: (collaborators) => set({ onlineCollaborators: collaborators || [] }),
+
+	// Global Search
+	searchResults: { projects: [], tasks: [], comments: [], members: [] },
+	isSearching: false,
+
+	// Modals & Panels Global State
 	isCreateWorkspaceModalOpen: false,
-	setIsCreateWorkspaceModalOpen: (isOpen) =>
-		set({ isCreateWorkspaceModalOpen: isOpen }),
+	setIsCreateWorkspaceModalOpen: (isOpen) => set({ isCreateWorkspaceModalOpen: isOpen }),
+
+	isCreateSprintModalOpen: false,
+	setIsCreateSprintModalOpen: (isOpen) => set({ isCreateSprintModalOpen: isOpen }),
+
+	isCommandPaletteOpen: false,
+	setIsCommandPaletteOpen: (isOpen) => set({ isCommandPaletteOpen: isOpen }),
+
+	isShortcutsOpen: false,
+	setIsShortcutsOpen: (isOpen) => set({ isShortcutsOpen: isOpen }),
+
+	isWipLimitModalOpen: false,
+	setIsWipLimitModalOpen: (isOpen) => set({ isWipLimitModalOpen: isOpen }),
 
 	isTimeTravelOpen: false,
 	setIsTimeTravelOpen: (isOpen) => set({ isTimeTravelOpen: isOpen }),
 
-	// 👈 Added AI Copilot Decompose Modal State
 	isAiDecomposeOpen: false,
 	setIsAiDecomposeOpen: (isOpen) => set({ isAiDecomposeOpen: isOpen }),
 
 	selectedTicket: null,
 	activityOpen: false,
 	activityLogs: [],
+	activityTotal: 0,
+	activityPage: 1,
 
 	setSelectedTicket: (ticket) => set({ selectedTicket: ticket }),
 	setActivityOpen: (isOpen) => set({ activityOpen: isOpen }),
@@ -41,20 +81,8 @@ export const useWorkspaceStore = create((set, get) => ({
 	newTicketCol: null,
 	setNewTicketCol: (colId) => set({ newTicketCol: colId }),
 
-	fetchActivityLogs: async (projectId) => {
-		try {
-			const res = await fetch(`${API_BASE}/activity-logs/${projectId}`, {
-				headers: getAuthHeaders(),
-			});
-			const data = await res.json();
-			if (res.ok) set({ activityLogs: data });
-		} catch (err) {
-			console.error("Fetch activity logs error:", err);
-		}
-	},
-
 	/* ------------------------------------------------------------------ */
-	/* FETCH ALL WORKSPACES (Command Center)                             */
+	/* 1. FETCH ALL WORKSPACES                                            */
 	/* ------------------------------------------------------------------ */
 	fetchWorkspaces: async () => {
 		set({ loading: true, error: null });
@@ -62,12 +90,8 @@ export const useWorkspaceStore = create((set, get) => ({
 			const res = await fetch(`${API_BASE}/projects`, {
 				headers: getAuthHeaders(),
 			});
-
 			const data = await res.json();
-
-			if (!res.ok) {
-				throw new Error(data.message || "Failed to fetch workspaces");
-			}
+			if (!res.ok) throw new Error(data.message || "Failed to fetch workspaces");
 
 			const normalized = data.map((ws) => ({
 				id: ws.id,
@@ -76,7 +100,6 @@ export const useWorkspaceStore = create((set, get) => ({
 				tickets: ws.total_tickets || 0,
 				activeTickets: ws.active_tickets || 0,
 				completedTickets: ws.completed_tickets || 0,
-				color: ws.color || "from-teal-500 to-cyan-500",
 				role: ws.role || "member",
 				createdAt: ws.created_at,
 			}));
@@ -85,12 +108,11 @@ export const useWorkspaceStore = create((set, get) => ({
 		} catch (err) {
 			console.error("Fetch workspaces error:", err);
 			set({ error: err.message, loading: false });
-			toast.error(err.message || "Could not connect to server");
 		}
 	},
 
 	/* ------------------------------------------------------------------ */
-	/* FETCH SINGLE WORKSPACE + BOARD TASKS                              */
+	/* 2. FETCH SINGLE WORKSPACE + BOARD DATA                             */
 	/* ------------------------------------------------------------------ */
 	fetchWorkspaceById: async (projectId) => {
 		set({ loading: true, error: null });
@@ -98,16 +120,15 @@ export const useWorkspaceStore = create((set, get) => ({
 			const res = await fetch(`${API_BASE}/projects/${projectId}`, {
 				headers: getAuthHeaders(),
 			});
-
 			const data = await res.json();
+			if (!res.ok) throw new Error(data.message || "Failed to load board details");
 
-			if (!res.ok) {
-				throw new Error(data.message || "Failed to load board details");
-			}
-			const workspaceTickets = data.tasks || data.tickets || [];
+			const workspaceTickets = data.tasks || [];
 			set({
 				currentWorkspace: data,
 				tickets: workspaceTickets,
+				wipLimits: data.wipLimits || {},
+				activeSprint: data.activeSprint || null,
 				loading: false,
 			});
 			return data;
@@ -119,113 +140,51 @@ export const useWorkspaceStore = create((set, get) => ({
 	},
 
 	/* ------------------------------------------------------------------ */
-	/* CREATE WORKSPACE                                                   */
+	/* 3. CREATE & UPDATE WORKSPACE                                       */
 	/* ------------------------------------------------------------------ */
 	createWorkspace: async ({ workspaceName, description }) => {
-		const previousWorkspaces = get().workspaces;
-
-		const tempId = `temp-${Date.now()}`;
-		const tempWorkspace = {
-			id: tempId,
-			name: workspaceName,
-			description: description || "",
-			tickets: 0,
-			activeTickets: 0,
-			completedTickets: 0,
-			role: "owner",
-		};
-
-		set((state) => ({
-			workspaces: [tempWorkspace, ...state.workspaces],
-			isCreateWorkspaceModalOpen: false,
-		}));
-
 		try {
 			const res = await fetch(`${API_BASE}/projects`, {
 				method: "POST",
 				headers: getAuthHeaders(),
-				body: JSON.stringify({
-					name: workspaceName,
-					description,
-				}),
+				body: JSON.stringify({ name: workspaceName, description }),
 			});
-
 			const data = await res.json();
+			if (!res.ok) throw new Error(data.message || "Failed to create workspace");
 
-			if (!res.ok) {
-				throw new Error(data.message || "Failed to create workspace");
-			}
-
-			set((state) => ({
-				workspaces: state.workspaces.map((ws) =>
-					ws.id === tempId
-						? {
-								id: data.id,
-								name: data.name,
-								description: data.description,
-								tickets: 0,
-								activeTickets: 0,
-								completedTickets: 0,
-								role: "owner",
-								createdAt: data.created_at,
-							}
-						: ws,
-				),
-			}));
-
-			toast.success(`Workspace "${data.name}" created successfully!`);
+			toast.success(`Workspace "${data.name}" created!`);
+			get().fetchWorkspaces();
+			set({ isCreateWorkspaceModalOpen: false });
 			return data;
 		} catch (err) {
 			console.error("Create workspace error:", err);
-			set({ workspaces: previousWorkspaces });
-			toast.error(err.message || "Failed to create workspace on server");
+			toast.error(err.message || "Failed to create workspace");
 		}
 	},
 
-	/* ------------------------------------------------------------------ */
-	/* UPDATE WORKSPACE NAME                                              */
-	/* ------------------------------------------------------------------ */
 	updateWorkspace: async (id, newName) => {
-		const previousWorkspaces = get().workspaces;
-		const previousCurrent = get().currentWorkspace;
-
-		set((state) => ({
-			workspaces: state.workspaces.map((ws) =>
-				ws.id === id ? { ...ws, name: newName } : ws,
-			),
-			currentWorkspace:
-				state.currentWorkspace?.id === id
-					? { ...state.currentWorkspace, name: newName }
-					: state.currentWorkspace,
-		}));
-
 		try {
 			const res = await fetch(`${API_BASE}/projects/${id}`, {
 				method: "PATCH",
 				headers: getAuthHeaders(),
 				body: JSON.stringify({ name: newName }),
 			});
-
 			const data = await res.json();
-
-			if (!res.ok) {
-				throw new Error(data.message || "Failed to update workspace name");
-			}
+			if (!res.ok) throw new Error(data.message || "Failed to rename workspace");
 
 			toast.success("Workspace renamed successfully");
+			get().fetchWorkspaces();
+			if (get().currentWorkspace?.id === id) {
+				set((state) => ({
+					currentWorkspace: { ...state.currentWorkspace, name: newName },
+				}));
+			}
 		} catch (err) {
 			console.error("Update workspace error:", err);
-			set({
-				workspaces: previousWorkspaces,
-				currentWorkspace: previousCurrent,
-			});
 			toast.error(err.message || "Could not rename workspace");
 		}
 	},
 
-	/* ------------------------------------------------------------------ */
-	/* ADD MEMBER TO WORKSPACE                                            */
-	/* ------------------------------------------------------------------ */
 	addMember: async (projectId, email, role = "member") => {
 		try {
 			const res = await fetch(`${API_BASE}/projects/${projectId}/members`, {
@@ -233,28 +192,133 @@ export const useWorkspaceStore = create((set, get) => ({
 				headers: getAuthHeaders(),
 				body: JSON.stringify({ email, role }),
 			});
-
 			const data = await res.json();
-
-			if (!res.ok) {
-				throw new Error(data.message || "Failed to add team member");
-			}
+			if (!res.ok) throw new Error(data.message || "Failed to add member");
 
 			toast.success(`Added ${data.member.name} to workspace!`);
-
 			if (get().currentWorkspace?.id === projectId) {
 				get().fetchWorkspaceById(projectId);
 			}
-
 			return data;
 		} catch (err) {
 			console.error("Add member error:", err);
-			toast.error(err.message || "Could not add team member");
+			toast.error(err.message || "Could not add member");
+		}
+	},
+
+	setWipLimit: async (projectId, columnId, limit) => {
+		try {
+			const res = await fetch(`${API_BASE}/projects/${projectId}/wip-limits`, {
+				method: "PUT",
+				headers: getAuthHeaders(),
+				body: JSON.stringify({ columnId, limit }),
+			});
+			if (res.ok) {
+				set((state) => ({
+					wipLimits: { ...state.wipLimits, [columnId]: parseInt(limit, 10) },
+				}));
+				toast.success(`WIP limit for ${columnId} updated to ${limit}`);
+			}
+		} catch (err) {
+			console.error("Set WIP limit error:", err);
 		}
 	},
 
 	/* ------------------------------------------------------------------ */
-	/* CREATE TICKET                                                      */
+	/* 4. SPRINT MANAGEMENT                                               */
+	/* ------------------------------------------------------------------ */
+	fetchSprints: async (projectId) => {
+		set({ sprintsLoading: true });
+		try {
+			const res = await fetch(`${API_BASE}/projects/${projectId}/sprints`, {
+				headers: getAuthHeaders(),
+			});
+			const data = await res.json();
+			if (res.ok) {
+				const active = data.find((s) => s.status === "active") || null;
+				set({ sprints: data, activeSprint: active, sprintsLoading: false });
+			}
+		} catch (err) {
+			console.error("Fetch sprints error:", err);
+			set({ sprintsLoading: false });
+		}
+	},
+
+	createSprint: async (projectId, sprintData) => {
+		try {
+			const res = await fetch(`${API_BASE}/projects/${projectId}/sprints`, {
+				method: "POST",
+				headers: getAuthHeaders(),
+				body: JSON.stringify(sprintData),
+			});
+			const data = await res.json();
+			if (!res.ok) throw new Error(data.message || "Failed to create sprint");
+
+			toast.success(`Sprint "${data.name}" created!`);
+			get().fetchSprints(projectId);
+			set({ isCreateSprintModalOpen: false });
+			return data;
+		} catch (err) {
+			console.error("Create sprint error:", err);
+			toast.error(err.message || "Could not create sprint");
+		}
+	},
+
+	startSprint: async (projectId, sprintId) => {
+		try {
+			const res = await fetch(`${API_BASE}/projects/${projectId}/sprints/${sprintId}/start`, {
+				method: "PATCH",
+				headers: getAuthHeaders(),
+			});
+			const data = await res.json();
+			if (!res.ok) throw new Error(data.message || "Failed to start sprint");
+
+			toast.success(`Sprint "${data.name}" is now Active! 🚀`);
+			get().fetchSprints(projectId);
+			get().fetchWorkspaceById(projectId);
+			return data;
+		} catch (err) {
+			console.error("Start sprint error:", err);
+			toast.error(err.message || "Could not start sprint");
+		}
+	},
+
+	completeSprint: async (projectId, sprintId) => {
+		try {
+			const res = await fetch(`${API_BASE}/projects/${projectId}/sprints/${sprintId}/complete`, {
+				method: "PATCH",
+				headers: getAuthHeaders(),
+			});
+			const data = await res.json();
+			if (!res.ok) throw new Error(data.message || "Failed to complete sprint");
+
+			toast.success(`Sprint "${data.name}" marked Completed! 🎉`);
+			get().fetchSprints(projectId);
+			get().fetchWorkspaceById(projectId);
+			return data;
+		} catch (err) {
+			console.error("Complete sprint error:", err);
+			toast.error(err.message || "Could not complete sprint");
+		}
+	},
+
+	fetchSprintBurndown: async (projectId, sprintId) => {
+		try {
+			const res = await fetch(`${API_BASE}/projects/${projectId}/sprints/${sprintId}/burndown`, {
+				headers: getAuthHeaders(),
+			});
+			const data = await res.json();
+			if (res.ok) {
+				set({ burndownData: data });
+				return data;
+			}
+		} catch (err) {
+			console.error("Fetch burndown error:", err);
+		}
+	},
+
+	/* ------------------------------------------------------------------ */
+	/* 5. TASK OPERATIONS                                                 */
 	/* ------------------------------------------------------------------ */
 	createTicket: async (ticketData) => {
 		const currWs = get().currentWorkspace;
@@ -263,18 +327,16 @@ export const useWorkspaceStore = create((set, get) => ({
 		try {
 			const res = await fetch(`${API_BASE}/tickets`, {
 				method: "POST",
-				headers: getAuthHeaders(), // 👈 FIX 1: Call function getAuthHeaders() with parentheses!
+				headers: getAuthHeaders(),
 				body: JSON.stringify({
 					projectId: currWs.id,
 					...ticketData,
 				}),
 			});
 			const data = await res.json();
+			if (!res.ok) throw new Error(data.message || "Failed to create ticket");
 
-			if (!res.ok) {
-				throw new Error(data.message || "Failed to create ticket");
-			}
-			toast.success(`Ticket ${data.task_key || ""} created successfully`);
+			toast.success(`Issue ${data.task_key || ""} created successfully`);
 			set((state) => ({
 				currentWorkspace: state.currentWorkspace
 					? {
@@ -282,6 +344,7 @@ export const useWorkspaceStore = create((set, get) => ({
 							tasks: [data, ...(state.currentWorkspace.tasks || [])],
 						}
 					: null,
+				tickets: [data, ...state.tickets],
 			}));
 			return data;
 		} catch (err) {
@@ -290,9 +353,76 @@ export const useWorkspaceStore = create((set, get) => ({
 		}
 	},
 
-	/* ------------------------------------------------------------------ */
-	/* ADD COMMENT TO TICKET                                              */
-	/* ------------------------------------------------------------------ */
+	updateTicket: async (taskId, updates) => {
+		try {
+			const res = await fetch(`${API_BASE}/tickets/${taskId}`, {
+				method: "PATCH",
+				headers: getAuthHeaders(),
+				body: JSON.stringify(updates),
+			});
+			const data = await res.json();
+			if (!res.ok) throw new Error(data.message || "Failed to update ticket");
+
+			toast.success("Task updated");
+
+			// Update in state
+			set((state) => {
+				const updateList = (list) =>
+					(list || []).map((t) => (t.id === taskId ? { ...t, ...data } : t));
+
+				const updatedSelected =
+					state.selectedTicket?.id === taskId
+						? { ...state.selectedTicket, ...data }
+						: state.selectedTicket;
+
+				return {
+					tickets: updateList(state.tickets),
+					selectedTicket: updatedSelected,
+					currentWorkspace: state.currentWorkspace
+						? {
+								...state.currentWorkspace,
+								tasks: updateList(state.currentWorkspace.tasks),
+							}
+						: null,
+				};
+			});
+
+			return data;
+		} catch (err) {
+			console.error("Update ticket error:", err);
+			toast.error(err.message || "Could not update task");
+		}
+	},
+
+	deleteTicket: async (taskId) => {
+		try {
+			const res = await fetch(`${API_BASE}/tickets/${taskId}`, {
+				method: "DELETE",
+				headers: getAuthHeaders(),
+			});
+			if (!res.ok) {
+				const errorData = await res.json();
+				throw new Error(errorData.message || "Failed to delete task");
+			}
+
+			toast.success("Task deleted");
+
+			set((state) => ({
+				selectedTicket: null,
+				tickets: state.tickets.filter((t) => t.id !== taskId),
+				currentWorkspace: state.currentWorkspace
+					? {
+							...state.currentWorkspace,
+							tasks: (state.currentWorkspace.tasks || []).filter((t) => t.id !== taskId),
+						}
+					: null,
+			}));
+		} catch (err) {
+			console.error("Delete task error:", err);
+			toast.error(err.message || "Could not delete task");
+		}
+	},
+
 	addComment: async (taskId, text) => {
 		if (!text || !text.trim()) return;
 		const currentWorkspaceId = get().currentWorkspace?.id;
@@ -305,39 +435,33 @@ export const useWorkspaceStore = create((set, get) => ({
 					projectId: currentWorkspaceId,
 				}),
 			});
-
-			// Safe JSON Parsing Guard
-			const contentType = res.headers.get("content-type");
-			const isJson = contentType && contentType.includes("application/json");
-			const data = isJson ? await res.json() : null;
-
-			if (!res.ok) {
-				const errorMsg =
-					data?.message || `Server returned ${res.status} status`;
-				throw new Error(errorMsg);
-			}
+			const data = await res.json();
+			if (!res.ok) throw new Error(data.message || "Could not post comment");
 
 			toast.success("Comment added");
 
 			set((state) => {
-				if (!state.currentWorkspace) return state;
-
-				const updatedTasks = state.currentWorkspace.tasks.map((task) => {
+				const appendComment = (task) => {
 					if (task.id === taskId) {
-						const comments = task.comments || [];
 						return {
 							...task,
-							comments: [...comments, data],
+							comments: [...(task.comments || []), data],
 						};
 					}
 					return task;
-				});
+				};
 
 				return {
-					currentWorkspace: {
-						...state.currentWorkspace,
-						tasks: updatedTasks,
-					},
+					selectedTicket:
+						state.selectedTicket?.id === taskId
+							? appendComment(state.selectedTicket)
+							: state.selectedTicket,
+					currentWorkspace: state.currentWorkspace
+						? {
+								...state.currentWorkspace,
+								tasks: (state.currentWorkspace.tasks || []).map(appendComment),
+							}
+						: null,
 				};
 			});
 
@@ -345,6 +469,268 @@ export const useWorkspaceStore = create((set, get) => ({
 		} catch (err) {
 			console.error("Add comment error:", err);
 			toast.error(err.message || "Could not post comment");
+		}
+	},
+
+	/* ------------------------------------------------------------------ */
+	/* 6. SUBTASKS                                                        */
+	/* ------------------------------------------------------------------ */
+	addSubtask: async (taskId, title) => {
+		try {
+			const res = await fetch(`${API_BASE}/tickets/${taskId}/subtasks`, {
+				method: "POST",
+				headers: getAuthHeaders(),
+				body: JSON.stringify({ title }),
+			});
+			const data = await res.json();
+			if (!res.ok) throw new Error(data.message || "Failed to add subtask");
+
+			set((state) => {
+				if (state.selectedTicket?.id === taskId) {
+					return {
+						selectedTicket: {
+							...state.selectedTicket,
+							subtasks: [...(state.selectedTicket.subtasks || []), data],
+						},
+					};
+				}
+				return state;
+			});
+			return data;
+		} catch (err) {
+			console.error("Add subtask error:", err);
+			toast.error(err.message || "Could not add subtask");
+		}
+	},
+
+	toggleSubtask: async (taskId, subtaskId, isCompleted) => {
+		try {
+			const res = await fetch(`${API_BASE}/tickets/${taskId}/subtasks/${subtaskId}`, {
+				method: "PATCH",
+				headers: getAuthHeaders(),
+				body: JSON.stringify({ is_completed: isCompleted }),
+			});
+			const data = await res.json();
+			if (res.ok && get().selectedTicket?.id === taskId) {
+				set((state) => ({
+					selectedTicket: {
+						...state.selectedTicket,
+						subtasks: (state.selectedTicket.subtasks || []).map((s) =>
+							s.id === subtaskId ? { ...s, is_completed: isCompleted } : s,
+						),
+					},
+				}));
+			}
+		} catch (err) {
+			console.error("Toggle subtask error:", err);
+		}
+	},
+
+	deleteSubtask: async (taskId, subtaskId) => {
+		try {
+			await fetch(`${API_BASE}/tickets/${taskId}/subtasks/${subtaskId}`, {
+				method: "DELETE",
+				headers: getAuthHeaders(),
+			});
+			if (get().selectedTicket?.id === taskId) {
+				set((state) => ({
+					selectedTicket: {
+						...state.selectedTicket,
+						subtasks: (state.selectedTicket.subtasks || []).filter((s) => s.id !== subtaskId),
+					},
+				}));
+			}
+		} catch (err) {
+			console.error("Delete subtask error:", err);
+		}
+	},
+
+	/* ------------------------------------------------------------------ */
+	/* 7. DEPENDENCIES                                                    */
+	/* ------------------------------------------------------------------ */
+	addDependency: async (taskId, dependsOnTaskId, dependencyType = "blocks") => {
+		try {
+			const res = await fetch(`${API_BASE}/tickets/${taskId}/dependencies`, {
+				method: "POST",
+				headers: getAuthHeaders(),
+				body: JSON.stringify({ dependsOnTaskId, dependencyType }),
+			});
+			const data = await res.json();
+			if (!res.ok) throw new Error(data.message || "Failed to add dependency");
+
+			toast.success("Dependency link created");
+			if (get().selectedTicket?.id === taskId) {
+				set((state) => ({
+					selectedTicket: {
+						...state.selectedTicket,
+						dependencies: [...(state.selectedTicket.dependencies || []), data],
+					},
+				}));
+			}
+			return data;
+		} catch (err) {
+			console.error("Add dependency error:", err);
+			toast.error(err.message || "Could not add dependency");
+		}
+	},
+
+	removeDependency: async (taskId, dependencyId) => {
+		try {
+			await fetch(`${API_BASE}/tickets/${taskId}/dependencies/${dependencyId}`, {
+				method: "DELETE",
+				headers: getAuthHeaders(),
+			});
+			toast.success("Dependency removed");
+			if (get().selectedTicket?.id === taskId) {
+				set((state) => ({
+					selectedTicket: {
+						...state.selectedTicket,
+						dependencies: (state.selectedTicket.dependencies || []).filter(
+							(d) => d.id !== dependencyId,
+						),
+						blockedBy: (state.selectedTicket.blockedBy || []).filter(
+							(d) => d.id !== dependencyId,
+						),
+					},
+				}));
+			}
+		} catch (err) {
+			console.error("Remove dependency error:", err);
+		}
+	},
+
+	/* ------------------------------------------------------------------ */
+	/* 8. NOTIFICATIONS                                                   */
+	/* ------------------------------------------------------------------ */
+	fetchNotifications: async () => {
+		try {
+			const res = await fetch(`${API_BASE}/notifications`, {
+				headers: getAuthHeaders(),
+			});
+			const data = await res.json();
+			if (res.ok) {
+				set({
+					notifications: data.notifications || [],
+					unreadCount: data.unreadCount || 0,
+				});
+			}
+		} catch (err) {
+			console.error("Fetch notifications error:", err);
+		}
+	},
+
+	markNotificationRead: async (id) => {
+		try {
+			await fetch(`${API_BASE}/notifications/${id}/read`, {
+				method: "PATCH",
+				headers: getAuthHeaders(),
+			});
+			set((state) => ({
+				notifications: state.notifications.map((n) =>
+					n.id === id ? { ...n, is_read: true } : n,
+				),
+				unreadCount: Math.max(0, state.unreadCount - 1),
+			}));
+		} catch (err) {
+			console.error("Mark notification read error:", err);
+		}
+	},
+
+	markAllNotificationsRead: async () => {
+		try {
+			await fetch(`${API_BASE}/notifications/read-all`, {
+				method: "PATCH",
+				headers: getAuthHeaders(),
+			});
+			set((state) => ({
+				notifications: state.notifications.map((n) => ({ ...n, is_read: true })),
+				unreadCount: 0,
+			}));
+			toast.success("All notifications marked as read");
+		} catch (err) {
+			console.error("Mark all read error:", err);
+		}
+	},
+
+	/* ------------------------------------------------------------------ */
+	/* 9. ANALYTICS & MY WORK                                             */
+	/* ------------------------------------------------------------------ */
+	fetchProjectAnalytics: async (projectId) => {
+		set({ analyticsLoading: true });
+		try {
+			const res = await fetch(`${API_BASE}/analytics/projects/${projectId}/analytics`, {
+				headers: getAuthHeaders(),
+			});
+			const data = await res.json();
+			if (res.ok) {
+				set({ projectAnalytics: data, analyticsLoading: false });
+				return data;
+			}
+		} catch (err) {
+			console.error("Fetch analytics error:", err);
+			set({ analyticsLoading: false });
+		}
+	},
+
+	fetchMyWork: async () => {
+		set({ myWorkLoading: true });
+		try {
+			const res = await fetch(`${API_BASE}/analytics/my-work`, {
+				headers: getAuthHeaders(),
+			});
+			const data = await res.json();
+			if (res.ok) {
+				set({ myWorkData: data, myWorkLoading: false });
+				return data;
+			}
+		} catch (err) {
+			console.error("Fetch my work error:", err);
+			set({ myWorkLoading: false });
+		}
+	},
+
+	/* ------------------------------------------------------------------ */
+	/* 10. GLOBAL SEARCH                                                  */
+	/* ------------------------------------------------------------------ */
+	searchGlobal: async (query) => {
+		if (!query || query.trim().length < 2) {
+			set({ searchResults: { projects: [], tasks: [], comments: [], members: [] } });
+			return;
+		}
+
+		set({ isSearching: true });
+		try {
+			const res = await fetch(`${API_BASE}/search?q=${encodeURIComponent(query.trim())}`, {
+				headers: getAuthHeaders(),
+			});
+			const data = await res.json();
+			if (res.ok) {
+				set({ searchResults: data, isSearching: false });
+			}
+		} catch (err) {
+			console.error("Search error:", err);
+			set({ isSearching: false });
+		}
+	},
+
+	/* ------------------------------------------------------------------ */
+	/* 11. ACTIVITY LOGS                                                  */
+	/* ------------------------------------------------------------------ */
+	fetchActivityLogs: async (projectId, page = 1) => {
+		try {
+			const res = await fetch(`${API_BASE}/activity-logs/${projectId}?page=${page}&limit=30`, {
+				headers: getAuthHeaders(),
+			});
+			const data = await res.json();
+			if (res.ok) {
+				set({
+					activityLogs: data.activities || [],
+					activityTotal: data.total || 0,
+					activityPage: data.page || 1,
+				});
+			}
+		} catch (err) {
+			console.error("Fetch activity logs error:", err);
 		}
 	},
 }));

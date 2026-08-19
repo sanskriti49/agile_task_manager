@@ -1,276 +1,231 @@
-```markdown
-# 🚀 Agile Task Manager
+# ⚡ FLUX Agile — Enterprise Collaborative Project Management Platform
 
-A full‑stack Kanban‑style project management tool built for real‑time team collaboration.  
-Drag tasks across columns, chat via comments, and see every change appear instantly – all while leveraging a polyglot database architecture (PostgreSQL for structured data, MongoDB for activity logs).
+> An enterprise-grade, real-time Agile Project Management & Collaboration Platform inspired by **Linear**, **Jira**, and **Trello**, built with a high-performance **Polyglot Database Architecture** (PostgreSQL + MongoDB), **Socket.io** live presence synchronization, and **React 19** frontend.
 
 ---
 
-## ✨ Features
+## 🏛️ System Architecture
 
-- User Authentication – Register/Login with JWT‑based auth.
-- Project Management – Create projects and invite team members (Admin/Member roles).
-- Kanban Board – Visualise tasks in Backlog, To Do, In Progress, and Done columns.
-- Drag & Drop – Seamless reordering and status updates using `@hello-pangea/dnd` with optimistic UI.
-- Real‑time Sync – WebSocket (Socket.io) broadcasts task moves, comments, and activity instantly to all connected clients.
-- Activity Logs – Every action (create, move, assign, comment) is stored in a MongoDB collection for full audit history.
-- Role‑Based Access Control (RBAC) – Admins can delete tasks and manage members; Members can create and move tasks.
-- Polyglot Persistence – PostgreSQL for relational core data, MongoDB for high‑volume unstructured logs.
+```mermaid
+flowchart TD
+    subgraph Client ["Client Tier (React 19 + Tailwind CSS + Zustand)"]
+        UI[Modern Linear-Style UI]
+        Theme[Dark / Light Mode Engine]
+        CmdK[Command Palette & Shortcuts]
+        Kanban[Drag & Drop Kanban Board]
+        Sprints[Sprint Backlog & Burndown]
+        Analytics[Smart Project Analytics]
+        MyWork[Personal My Work View]
+        Presence[Live Collaborator Presence]
+    end
 
----
+    subgraph API ["Server Tier (Node.js + Express)"]
+        Auth[JWT Auth & RBAC Guard]
+        TaskCtrl[Task & Subtask Manager]
+        DepCtrl[Cycle-Safe Dependencies Engine]
+        SprintCtrl[Scrum Sprint Lifecycle]
+        SearchCtrl[Global Search Engine]
+        NotifyCtrl[In-App Mentions & Notification Engine]
+        SocketServer[Socket.io Real-Time Hub]
+    end
 
-## 🛠 Tech Stack
+    subgraph Data ["Polyglot Storage Tier"]
+        Postgres[(PostgreSQL 17/18 - ACID Relational Data)]
+        Mongo[(MongoDB - Event Sourcing & Audit Logs)]
+    end
 
-| Layer        | Technology                                      |
-| ------------ | ----------------------------------------------- |
-| Frontend     | React, `@hello-pangea/dnd`, Socket.io Client    |
-| Backend      | Node.js, Express, Socket.io                     |
-| Databases    | PostgreSQL (main data), MongoDB (activity logs) |
-| Auth         | JSON Web Tokens, bcryptjs                       |
-| ORM / Driver | `pg` (raw SQL), Mongoose                        |
-
----
-
-## 📁 Project Structure
-```agile-task-manager/
-├── client/ # React app
-│ ├── public/
-│ └── src/
-│ ├── components/ # Board, Card, ActivityFeed, Modals...
-│ ├── hooks/ # useSocket, useOptimistic...
-│ ├── services/ # API calls, socket client
-│ └── ...
-├── server/
-│ ├── config/
-│ │ ├── db.js # PostgreSQL pool
-│ │ └── mongo.js # Mongoose connection
-│ ├── models/
-│ │ └── ActivityLog.js # Mongoose schema for logs
-│ ├── routes/
-│ │ ├── auth.js
-│ │ ├── projects.js
-│ │ ├── tasks.js
-│ │ └── comments.js
-│ ├── controllers/
-│ ├── middleware/ # auth middleware, rbac
-│ ├── socket.js # Socket.io event handlers
-│ └── index.js # Entry point
-├── .env
-└── README.md
-````
+    UI --> SocketServer
+    UI --> Auth
+    Auth --> Postgres
+    TaskCtrl --> Postgres
+    DepCtrl --> Postgres
+    SprintCtrl --> Postgres
+    SearchCtrl --> Postgres
+    NotifyCtrl --> Postgres
+    TaskCtrl --> Mongo
+    SprintCtrl --> Mongo
+    SocketServer --> UI
+```
 
 ---
 
-## ⚙️ Getting Started
+## 💎 Key Features & Capabilities
 
-### Prerequisites
+### 1. 📊 Smart Project Analytics Dashboard
+- **Delivery Velocity & Burndown**: Computed directly from PostgreSQL timestamps and story points.
+- **Visual Status & Priority Distribution**: Dynamic SVG charts breakdown issues by backlog, todo, in_progress, done, and high/med/low priority.
+- **Team Workload Matrix**: Instant visibility into active vs. completed tasks per engineer.
+- **Active Sprint Health**: Single-click sprint burndown progression tracking.
 
-- **Node.js** (v18 or later)
-- **PostgreSQL** (v13+ recommended for `gen_random_uuid()`)
-- **MongoDB** (v6+)
-- **npm** or **yarn**
+### 2. 🔥 Sprints & Agile Scrum Management
+- **Single-Active Sprint Constraint**: Guarantees sprint cycle integrity by preventing multiple concurrent active sprints per project.
+- **Burndown Chart Visualizer**: Day-by-day ideal burndown guideline vs. actual remaining story points.
+- **Sprint Lifecycle**: Smooth transitions from `planned` ➔ `active` ➔ `completed` with uncompleted task rollover to backlog.
 
-### Installation
+### 3. 🛡️ Kanban Board with Configurable WIP Limits
+- **Column WIP Limit Safeguards**: Enforces Lean workflow discipline by highlighting exceeded column limits in real-time.
+- **Smooth Drag-and-Drop**: Multi-column DnD with optimistic client-side transitions and rollback on network errors.
+- **Multi-Dimensional Filters**: Instant client-side & server-side filtering by Assignee, Priority, Sprint, Label, and Due Date.
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/your-username/agile-task-manager.git
-   cd agile-task-manager
-````
+### 4. 🔗 Subtasks & Circular Dependency Prevention
+- **Subtask Checklists**: Interactive nested subtask items with completion percentages.
+- **Dependencies Manager**: Link tasks as **Blocks** or **Blocked By** with cycle detection algorithms preventing deadlocks.
 
-2. **Install backend dependencies**
+### 5. 🔔 In-App Notifications & `@Mention` Triggers
+- **Rich Comments with `@User` Highlights**: Type `@Name` in task comments to trigger real-time notifications for teammates.
+- **Notification Dropdown**: Instant unread badge counter, mark-as-read triggers, and direct navigation.
 
-   ```bash
-   cd server
-   npm install
-   ```
+### 6. 👤 Personal "My Work" Command Center
+- **Unified Assignee Hub**: All issues assigned to the logged-in user across all projects grouped by Due Date, Overdue status, and Priority.
 
-3. Install frontend dependencies
+### 7. 👥 Real-Time Collaborator Presence & Heartbeat
+- **Live User Avatars**: Active teammates viewing a project board are displayed in real-time via Socket.io presence rooms.
 
-   ```bash
-   cd ../client
-   npm install
-   ```
+### 8. ⌨️ Command Palette (`Ctrl + K`) & Keyboard Shortcuts (`?`)
+- **Frictionless Navigation**: Instant global search, quick actions, theme toggle, and keyboard shortcuts modal.
 
-4. **Set up environment variables**  
-   Create a `.env` file inside the `server/` directory:
-   ```env
-   PORT=5000
-   DATABASE_URL=postgresql://youruser:yourpassword@localhost:5432/agile_db
-   MONGO_URI=mongodb://localhost:27017/agile_logs
-   JWT_SECRET=your_super_secret_key_change_me
-   ```
-
-### Database Setup
-
-#### PostgreSQL
-
-1. Create a new database (e.g. `agile_db`).
-2. Run the following SQL to create the required tables:
-
-   ```sql
-   CREATE EXTENSION IF NOT EXISTS "pgcrypto";
-
-   CREATE TABLE users (
-       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-       name VARCHAR(100) NOT NULL,
-       email VARCHAR(255) UNIQUE NOT NULL,
-       password VARCHAR(255) NOT NULL,
-       created_at TIMESTAMPTZ DEFAULT NOW()
-   );
-
-   CREATE TABLE projects (
-       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-       name VARCHAR(100) NOT NULL,
-       description TEXT,
-       created_by UUID REFERENCES users(id) ON DELETE SET NULL,
-       created_at TIMESTAMPTZ DEFAULT NOW()
-   );
-
-   CREATE TABLE projects_members (
-       project_id UUID REFERENCES projects(id) ON DELETE CASCADE,
-       user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-       role VARCHAR(20) DEFAULT 'member',
-       joined_at TIMESTAMPTZ DEFAULT NOW(),
-       PRIMARY KEY (project_id, user_id)
-   );
-
-   CREATE TABLE tasks (
-       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-       project_id UUID REFERENCES projects(id) ON DELETE CASCADE,
-       title VARCHAR(255) NOT NULL,
-       description TEXT,
-       status VARCHAR(30) DEFAULT 'todo',
-       priority VARCHAR(20) DEFAULT 'medium',
-       assigned_to UUID REFERENCES users(id) ON DELETE SET NULL,
-       created_by UUID REFERENCES users(id) ON DELETE SET NULL,
-       position INTEGER DEFAULT 0,
-       created_at TIMESTAMPTZ DEFAULT NOW(),
-       updated_at TIMESTAMPTZ DEFAULT NOW()
-   );
-
-   CREATE TABLE comments (
-       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-       task_id UUID REFERENCES tasks(id) ON DELETE CASCADE,
-       author_id UUID REFERENCES users(id) ON DELETE CASCADE,
-       body TEXT NOT NULL,
-       created_at TIMESTAMPTZ DEFAULT NOW()
-   );
-   ```
-
-#### MongoDB
-
-Make sure MongoDB is running. The first time you start the server, Mongoose will automatically create the `activitylogs` collection.
-
-### Running the App
-
-1. **Start the backend**
-
-   ```bash
-   cd server
-   npm run dev      # starts with nodemon (or node index.js)
-   ```
-
-2. Start the frontend
-   ```bash
-   cd client
-   npm start        # runs on http://localhost:3000
-   ```
-
-Open [http://localhost:3000](http://localhost:3000) and you’re ready to collaborate!
+### 9. 🌓 First-Class Dark Mode
+- Seamless Slate / Zinc dark theme persisted in localStorage with system preference fallback.
 
 ---
 
-## 🔌 API Endpoints
+## 🗄️ Polyglot Database Architecture
 
-### Authentication
-
-| Method | Endpoint             | Description        |
-| ------ | -------------------- | ------------------ |
-| POST   | `/api/auth/register` | Create new user    |
-| POST   | `/api/auth/login`    | Login, returns JWT |
-
-### Projects
-
-| Method | Endpoint                    | Description                       |
-| ------ | --------------------------- | --------------------------------- |
-| GET    | `/api/projects`             | Get all projects for current user |
-| POST   | `/api/projects`             | Create a new project              |
-| GET    | `/api/projects/:id`         | Get project details + members     |
-| POST   | `/api/projects/:id/members` | Add a member (admin only)         |
-
-### Tasks
-
-| Method | Endpoint                  | Description                          |
-| ------ | ------------------------- | ------------------------------------ |
-| GET    | `/api/projects/:id/tasks` | Get tasks (can filter by `?status=`) |
-| POST   | `/api/projects/:id/tasks` | Create a new task                    |
-| PATCH  | `/api/tasks/:id`          | Update status / position / assignee  |
-| DELETE | `/api/tasks/:id`          | Delete a task (admin only)           |
-
-### Comments
-
-| Method | Endpoint                  | Description      |
-| ------ | ------------------------- | ---------------- |
-| GET    | `/api/tasks/:id/comments` | Get all comments |
-| POST   | `/api/tasks/:id/comments` | Add a comment    |
-
-### Activity
-
-| Method | Endpoint                     | Description                         |
-| ------ | ---------------------------- | ----------------------------------- |
-| GET    | `/api/projects/:id/activity` | Retrieve activity logs from MongoDB |
+| Database | Technology | Purpose & Data Responsibility |
+| :--- | :--- | :--- |
+| **Relational Core** | **PostgreSQL** | • Users, Projects, Project Memberships (RBAC)<br>• Sprints, Tasks, Subtasks<br>• Task Dependencies (with foreign key constraints)<br>• Notifications & WIP Limits |
+| **Event / Audit Log** | **MongoDB** | • Append-only historical event stream (`ActivityLog`)<br>• Fast paginated audit queries for project drawers<br>• Schema-agnostic metadata changes (`oldValue`, `newValue`) |
 
 ---
 
-## 📡 Real‑time Events (Socket.io)
+## 🚀 Quickstart & Setup Guide
 
-Clients join a room named `project-{projectId}` after opening a project.
+### 1. Prerequisites
+- **Node.js**: v18.x or v20+
+- **PostgreSQL**: Local instance running on port `5432`
+- **MongoDB**: Local instance running on port `27017`
 
-**Emitted by server:**
+### 2. Clone & Install Dependencies
+```bash
+# Clone the repository
+git clone https://github.com/sanskriti49/agile_task_manager.git
+cd agile-task-manager
 
-- `task:updated` – task moved/edited
-- `task:created` – new task added
-- `task:deleted` – task removed
-- `comment:added` – new comment
-- `activity:new` – new activity log entry
+# Install Backend Dependencies
+cd server
+npm install
 
-**Emitted by client:**
+# Install Frontend Dependencies
+cd ../client
+npm install
+```
 
-- `join-project` – joins the room
+### 3. Configure Environment Variables
+
+**`server/.env`**:
+```env
+PORT=5000
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_USER=postgres
+DB_PASSWORD=your_postgres_password
+DB_NAME=agile_task_manager
+DATABASE_URL=postgresql://postgres:your_postgres_password@127.0.0.1:5432/agile_task_manager
+MONGO_URI=mongodb://127.0.0.1:27017/agile_logs
+JWT_SECRET=your_super_secret_jwt_key
+GOOGLE_CLIENT_ID=your_google_client_id
+```
+
+**`client/.env`**:
+```env
+VITE_API_URL=http://localhost:5000
+VITE_GOOGLE_CLIENT_ID=your_google_client_id
+```
+
+### 4. Run Migrations & Seed Sample Data
+```bash
+cd server
+
+# Run PostgreSQL Migrations & Seed Demo Data
+node scripts/seed.js
+```
+
+### 5. Start Development Servers
+
+In terminal 1 (Backend):
+```bash
+cd server
+npm run dev
+```
+
+In terminal 2 (Frontend):
+```bash
+cd client
+npm run dev
+```
+
+Visit **`http://localhost:5173`** in your browser.
 
 ---
 
-## 🧪 How to Use
+## 🔑 Pre-Seeded Demo Credentials
 
-1. **Register** and **login**.
-2. Create a new project and invite team members (by email).
-3. The board is initially empty. Add tasks using the “+ New Task” button.
-4. **Drag tasks** between columns to update their status. The change saves instantly.
-5. Click on a task to see details, comments, and assignment.
-6. The right‑side activity feed shows a live log of everything happening in the project.
+| Role | Name | Email | Password |
+| :--- | :--- | :--- | :--- |
+| **Lead Engineer** | Sanskriti Gupta | `sanskriti@flux.dev` | `password123` |
+| **Product Designer** | Aria Chen | `aria@flux.dev` | `password123` |
+| **Backend Architect** | Rohan Mehta | `rohan@flux.dev` | `password123` |
+| **Frontend Specialist**| Priya Nair | `priya@flux.dev` | `password123` |
 
 ---
 
-## 🤝 Contributing
+## 🧪 Automated Test Suite
 
-Contributions are welcome! Please fork the repository and open a Pull Request with your improvements.
+The platform includes an automated end-to-end API test suite validating authentication, RBAC authorization, sprint single-active constraints, circular dependency prevention, subtasks CRUD, and global search:
+
+```bash
+cd server
+node tests/api.test.js
+```
+
+**Test Output:**
+```
+🧪 Starting Automated Agile API Tests...
+
+✅ PostgreSQL connected
+✅ Applied migration: 0001_create_tables.sql
+✅ Applied migration: 0002_agile_features.sql
+✅ MongoDB connected
+📡 Test server listening at http://127.0.0.1:50637
+
+▶ 1. Testing Authentication (Signup, Login, Validation)...
+  ✅ Authentication passed
+
+▶ 2. Testing Authorization & RBAC Guard...
+  ✅ Authorization guard passed
+
+▶ 3. Testing Project/Workspace Creation & Membership...
+  ✅ Projects creation & listing passed
+
+▶ 4. Testing Sprint Lifecycle & Single Active Sprint Rule...
+  ✅ Sprint lifecycle & active constraint passed
+
+▶ 5. Testing Task Creation, Story Points, Tags, & Status Updates...
+  ✅ Task creation & updates passed
+
+▶ 6. Testing Task Dependencies & Cycle Prevention...
+  ✅ Task dependencies & cycle checks passed
+
+▶ 7. Testing Subtasks CRUD...
+  ✅ Subtasks operations passed
+
+▶ 8. Testing Global Search & Analytics Endpoints...
+  ✅ Search & Analytics passed
+
+🎉 ALL 8 TEST SUITES PASSED WITH 100% SUCCESS!
+```
 
 ---
 
 ## 📄 License
-
-This project is licensed under the MIT License – feel free to use it for your own learning or portfolio.
-
----
-
-## 🙋‍♂️ Resume‑worthy Highlights
-
-> **Agile Task Manager** | _React, Node.js, Express, PostgreSQL, MongoDB, Socket.io_
->
-> - Engineered a full‑stack project management tool with a drag‑and‑drop Kanban board using React and `@hello-pangea/dnd`.
-> - Designed a polyglot database architecture: PostgreSQL for relational data, MongoDB for unstructured audit logs.
-> - Implemented real‑time synchronisation via WebSockets (Socket.io) for instant task updates and activity feeds.
-> - Added Role‑Based Access Control (RBAC) to restrict project management actions to Admin users.
-````
-```
+This project is open-source and available under the [ISC License](LICENSE).
