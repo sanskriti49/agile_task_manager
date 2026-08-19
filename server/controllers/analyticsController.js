@@ -166,21 +166,30 @@ exports.getMyWork = async (req, res) => {
 	const now = new Date();
 	const todayStr = now.toISOString().split("T")[0];
 
-	const overdueTasks = allTasks.filter(
-		(t) => t.status !== "done" && t.due_date && new Date(t.due_date) < now && t.due_date.split("T")[0] !== todayStr,
-	);
+	const formatDateStr = (d) => {
+		if (!d) return null;
+		if (typeof d === "string") return d.split("T")[0];
+		if (d instanceof Date) return d.toISOString().split("T")[0];
+		return null;
+	};
 
-	const dueTodayTasks = allTasks.filter(
-		(t) => t.status !== "done" && t.due_date && t.due_date.split("T")[0] === todayStr,
-	);
+	const overdueTasks = allTasks.filter((t) => {
+		if (t.status === "done" || !t.due_date) return false;
+		const dueDate = new Date(t.due_date);
+		const dueStr = formatDateStr(t.due_date);
+		return dueDate < now && dueStr !== todayStr;
+	});
+
+	const dueTodayTasks = allTasks.filter((t) => {
+		if (t.status === "done" || !t.due_date) return false;
+		return formatDateStr(t.due_date) === todayStr;
+	});
 
 	const inProgressTasks = allTasks.filter(
-		(t) => (t.status === "inprogress" || t.status === "in_progress"),
+		(t) => t.status === "inprogress" || t.status === "in_progress",
 	);
 
-	const completedRecently = allTasks.filter(
-		(t) => t.status === "done",
-	);
+	const completedRecently = allTasks.filter((t) => t.status === "done");
 
 	// Group tasks by project
 	const byProject = {};

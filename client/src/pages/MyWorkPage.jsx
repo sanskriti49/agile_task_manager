@@ -24,7 +24,9 @@ export default function MyWorkPage() {
 	const myWorkLoading = useWorkspaceStore((state) => state.myWorkLoading);
 	const fetchMyWork = useWorkspaceStore((state) => state.fetchMyWork);
 	const updateTicket = useWorkspaceStore((state) => state.updateTicket);
-	const setSelectedTicket = useWorkspaceStore((state) => state.setSelectedTicket);
+	const setSelectedTicket = useWorkspaceStore(
+		(state) => state.setSelectedTicket,
+	);
 	const setNewTicketCol = useWorkspaceStore((state) => state.setNewTicketCol);
 
 	const [statusTab, setStatusTab] = useState("all"); // 'all' | 'due-today' | 'overdue' | 'inprogress' | 'completed'
@@ -56,32 +58,44 @@ export default function MyWorkPage() {
 		return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
 	}, [allTasks]);
 
+	const getDueDayStr = (d) => {
+		if (!d) return "";
+		if (typeof d === "string") return d.split("T")[0];
+		if (d instanceof Date) return d.toISOString().split("T")[0];
+		return "";
+	};
+
 	// Filter tasks
 	const filteredTasks = useMemo(() => {
 		const now = new Date();
 		const todayStr = now.toISOString().split("T")[0];
 
 		return allTasks.filter((t) => {
+			const dueDay = getDueDayStr(t.due_date);
+
 			// Tab filtering
 			if (statusTab === "due-today") {
-				if (t.status === "done" || !t.due_date || t.due_date.split("T")[0] !== todayStr)
-					return false;
+				if (t.status === "done" || !dueDay || dueDay !== todayStr) return false;
 			} else if (statusTab === "overdue") {
 				if (
 					t.status === "done" ||
 					!t.due_date ||
 					new Date(t.due_date) >= now ||
-					t.due_date.split("T")[0] === todayStr
+					dueDay === todayStr
 				)
 					return false;
 			} else if (statusTab === "inprogress") {
-				if (t.status !== "inprogress" && t.status !== "in_progress") return false;
+				if (t.status !== "inprogress" && t.status !== "in_progress")
+					return false;
 			} else if (statusTab === "completed") {
 				if (t.status !== "done") return false;
 			}
 
 			// Priority filter
-			if (priorityFilter !== "all" && t.priority?.toLowerCase() !== priorityFilter) {
+			if (
+				priorityFilter !== "all" &&
+				t.priority?.toLowerCase() !== priorityFilter
+			) {
 				return false;
 			}
 
@@ -121,7 +135,7 @@ export default function MyWorkPage() {
 		return (
 			<div className="flex flex-col items-center justify-center min-h-[500px] text-slate-400">
 				<Loader2 className="h-8 w-8 animate-spin text-teal-600 mb-2" />
-				<span className="font-mono-ui text-xs">Loading your workspace tasks...</span>
+				<span className="onest text-xs">Loading your workspace tasks...</span>
 			</div>
 		);
 	}
@@ -139,7 +153,8 @@ export default function MyWorkPage() {
 							My Work
 						</h1>
 						<p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-mono-ui">
-							{stats.totalAssigned} tasks assigned across {projectsList.length} workspace(s)
+							{stats.totalAssigned} tasks assigned across {projectsList.length}{" "}
+							workspace(s)
 						</p>
 					</div>
 
@@ -156,7 +171,9 @@ export default function MyWorkPage() {
 				<div className="grid grid-cols-2 sm:grid-cols-5 gap-3 my-6 font-mono-ui">
 					<div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs">
 						<div className="flex items-center justify-between text-slate-400 mb-1">
-							<span className="text-[11px] font-semibold uppercase">Assigned</span>
+							<span className="text-[11px] font-semibold uppercase">
+								Assigned
+							</span>
 							<CheckSquare className="h-3.5 w-3.5" />
 						</div>
 						<span className="text-2xl font-bold text-slate-900 dark:text-slate-100">
@@ -166,7 +183,9 @@ export default function MyWorkPage() {
 
 					<div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs">
 						<div className="flex items-center justify-between text-amber-500 mb-1">
-							<span className="text-[11px] font-semibold uppercase">In Progress</span>
+							<span className="text-[11px] font-semibold uppercase">
+								In Progress
+							</span>
 							<Clock className="h-3.5 w-3.5" />
 						</div>
 						<span className="text-2xl font-bold text-amber-600 dark:text-amber-400">
@@ -176,7 +195,9 @@ export default function MyWorkPage() {
 
 					<div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-rose-200/80 dark:border-rose-950/60 bg-rose-50/20 shadow-2xs">
 						<div className="flex items-center justify-between text-rose-500 mb-1">
-							<span className="text-[11px] font-semibold uppercase">Overdue</span>
+							<span className="text-[11px] font-semibold uppercase">
+								Overdue
+							</span>
 							<AlertCircle className="h-3.5 w-3.5" />
 						</div>
 						<span className="text-2xl font-bold text-rose-600 dark:text-rose-400">
@@ -186,7 +207,9 @@ export default function MyWorkPage() {
 
 					<div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs">
 						<div className="flex items-center justify-between text-sky-500 mb-1">
-							<span className="text-[11px] font-semibold uppercase">Due Today</span>
+							<span className="text-[11px] font-semibold uppercase">
+								Due Today
+							</span>
 							<Calendar className="h-3.5 w-3.5" />
 						</div>
 						<span className="text-2xl font-bold text-sky-600 dark:text-sky-400">
@@ -196,7 +219,9 @@ export default function MyWorkPage() {
 
 					<div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-emerald-200/80 dark:border-emerald-950/60 bg-emerald-50/20 shadow-2xs col-span-2 sm:col-span-1">
 						<div className="flex items-center justify-between text-emerald-600 mb-1">
-							<span className="text-[11px] font-semibold uppercase">Completed</span>
+							<span className="text-[11px] font-semibold uppercase">
+								Completed
+							</span>
 							<CheckCircle2 className="h-3.5 w-3.5" />
 						</div>
 						<span className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
@@ -211,9 +236,23 @@ export default function MyWorkPage() {
 					<div className="flex items-center gap-1 overflow-x-auto w-full sm:w-auto">
 						{[
 							{ id: "all", label: "All Tasks", count: stats.totalAssigned },
-							{ id: "due-today", label: "Due Today", count: stats.dueToday, alert: true },
-							{ id: "overdue", label: "Overdue", count: stats.overdue, danger: true },
-							{ id: "inprogress", label: "In Progress", count: stats.inProgress },
+							{
+								id: "due-today",
+								label: "Due Today",
+								count: stats.dueToday,
+								alert: true,
+							},
+							{
+								id: "overdue",
+								label: "Overdue",
+								count: stats.overdue,
+								danger: true,
+							},
+							{
+								id: "inprogress",
+								label: "In Progress",
+								count: stats.inProgress,
+							},
 							{ id: "completed", label: "Completed", count: stats.completed },
 						].map((tab) => (
 							<button
@@ -299,7 +338,8 @@ export default function MyWorkPage() {
 											{group.name}
 										</Link>
 										<span className="font-mono-ui text-[11px] text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">
-											{group.tasks.length} task{group.tasks.length !== 1 ? "s" : ""}
+											{group.tasks.length} task
+											{group.tasks.length !== 1 ? "s" : ""}
 										</span>
 									</div>
 
@@ -327,7 +367,9 @@ export default function MyWorkPage() {
 												key={task.id}
 												onClick={() => setSelectedTicket(task)}
 												className={`flex items-center justify-between px-5 py-3.5 hover:bg-slate-50/80 dark:hover:bg-slate-800/50 cursor-pointer transition-colors duration-150 ${
-													isDone ? "opacity-60 bg-slate-50/30 dark:bg-slate-950/20" : ""
+													isDone
+														? "opacity-60 bg-slate-50/30 dark:bg-slate-950/20"
+														: ""
 												}`}
 											>
 												<div className="flex items-center gap-3 min-w-0 flex-1 pr-4">

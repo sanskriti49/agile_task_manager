@@ -92,7 +92,9 @@ function PriorityBars({ level, className = "" }) {
 					width="3"
 					height={(i + 1) * 3.5}
 					rx="0.5"
-					className={i < level ? "fill-current" : "fill-slate-200 dark:fill-slate-700"}
+					className={
+						i < level ? "fill-current" : "fill-slate-200 dark:fill-slate-700"
+					}
 				/>
 			))}
 		</svg>
@@ -297,7 +299,10 @@ export default function NewTicketModal() {
 						<div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400">
 							<span className={`h-2 w-2 rounded-full ${colMeta?.dot}`} />
 							<span>
-								New issue in <strong className="text-slate-800 dark:text-slate-200">{colMeta?.label}</strong>
+								New issue in{" "}
+								<strong className="text-slate-800 dark:text-slate-200">
+									{colMeta?.label}
+								</strong>
 							</span>
 						</div>
 						<button
@@ -516,7 +521,9 @@ export default function NewTicketModal() {
 
 						{/* Story Points Input */}
 						<div className="flex items-center gap-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 py-1 font-mono-ui text-xs text-slate-700 dark:text-slate-200">
-							<span className="text-slate-400 text-[10px] uppercase font-bold">Pts:</span>
+							<span className="text-slate-400 text-[10px] uppercase font-bold">
+								Pts:
+							</span>
 							<input
 								type="number"
 								min="0"

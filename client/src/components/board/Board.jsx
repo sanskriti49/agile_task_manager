@@ -25,13 +25,21 @@ export default function Board() {
 	const user = useAuthStore((state) => state.user);
 
 	const currentWorkspace = useWorkspaceStore((state) => state.currentWorkspace);
-	const fetchWorkspaceById = useWorkspaceStore((state) => state.fetchWorkspaceById);
+	const fetchWorkspaceById = useWorkspaceStore(
+		(state) => state.fetchWorkspaceById,
+	);
 	const loading = useWorkspaceStore((state) => state.loading);
 	const wipLimits = useWorkspaceStore((state) => state.wipLimits) || {};
 	const activeSprint = useWorkspaceStore((state) => state.activeSprint);
-	const setOnlineCollaborators = useWorkspaceStore((state) => state.setOnlineCollaborators);
-	const setIsWipLimitModalOpen = useWorkspaceStore((state) => state.setIsWipLimitModalOpen);
-	const setIsCreateSprintModalOpen = useWorkspaceStore((state) => state.setIsCreateSprintModalOpen);
+	const setOnlineCollaborators = useWorkspaceStore(
+		(state) => state.setOnlineCollaborators,
+	);
+	const setIsWipLimitModalOpen = useWorkspaceStore(
+		(state) => state.setIsWipLimitModalOpen,
+	);
+	const setIsCreateSprintModalOpen = useWorkspaceStore(
+		(state) => state.setIsCreateSprintModalOpen,
+	);
 	const setNewTicketCol = useWorkspaceStore((state) => state.setNewTicketCol);
 
 	// Advanced Multi-Filtering States
@@ -202,7 +210,15 @@ export default function Board() {
 				matchesStatus
 			);
 		});
-	}, [rawTasks, searchQuery, priorityFilter, assigneeFilter, sprintFilter, statusFilter, activeSprint]);
+	}, [
+		rawTasks,
+		searchQuery,
+		priorityFilter,
+		assigneeFilter,
+		sprintFilter,
+		statusFilter,
+		activeSprint,
+	]);
 
 	if (loading && !currentWorkspace) {
 		return (
@@ -252,7 +268,8 @@ export default function Board() {
 					<span className="text-slate-300 dark:text-slate-700">|</span>
 
 					<span className="text-slate-500 dark:text-slate-400">
-						{filteredTasks.length} issue{filteredTasks.length !== 1 ? "s" : ""} on board
+						{filteredTasks.length} issue{filteredTasks.length !== 1 ? "s" : ""}{" "}
+						on board
 					</span>
 				</div>
 

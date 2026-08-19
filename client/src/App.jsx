@@ -46,8 +46,14 @@ const router = createBrowserRouter(
 						{ path: "dashboard", element: <WorkspacesDashboard /> },
 						{ path: "my-work", element: <MyWorkPage /> },
 						{ path: "workspace/:id", element: <Board /> },
-						{ path: "workspace/:id/dashboard", element: <ProjectDashboardPage /> },
-						{ path: "workspace/:id/sprints", element: <SprintManagementPage /> },
+						{
+							path: "workspace/:id/dashboard",
+							element: <ProjectDashboardPage />,
+						},
+						{
+							path: "workspace/:id/sprints",
+							element: <SprintManagementPage />,
+						},
 					],
 				},
 				{ path: "*", element: <Navigate to="/" replace /> },
@@ -64,7 +70,9 @@ const router = createBrowserRouter(
 
 export default function App() {
 	return (
-		<GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || "google-client-id"}>
+		<GoogleOAuthProvider
+			clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || "google-client-id"}
+		>
 			<Toaster position="top-right" richColors closeButton />
 			<RouterProvider router={router} />
 		</GoogleOAuthProvider>

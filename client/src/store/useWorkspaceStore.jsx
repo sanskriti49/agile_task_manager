@@ -663,11 +663,12 @@ export const useWorkspaceStore = create((set, get) => ({
 			});
 			const data = await res.json();
 			if (res.ok) {
-				set({ projectAnalytics: data, analyticsLoading: false });
+				set({ projectAnalytics: data });
 				return data;
 			}
 		} catch (err) {
 			console.error("Fetch analytics error:", err);
+		} finally {
 			set({ analyticsLoading: false });
 		}
 	},
@@ -680,11 +681,12 @@ export const useWorkspaceStore = create((set, get) => ({
 			});
 			const data = await res.json();
 			if (res.ok) {
-				set({ myWorkData: data, myWorkLoading: false });
+				set({ myWorkData: data });
 				return data;
 			}
 		} catch (err) {
 			console.error("Fetch my work error:", err);
+		} finally {
 			set({ myWorkLoading: false });
 		}
 	},
