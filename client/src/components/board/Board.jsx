@@ -11,8 +11,9 @@ import Topbar from "../layout/Topbar";
 import { Loader2, Flame, Sliders, BarChart3, Plus } from "lucide-react";
 import WipLimitModal from "../modals/WipLimitModal";
 import CreateSprintModal from "../modals/CreateSprintModal";
+import { API_URL, API_BASE } from "../../config/api";
 
-const socket = io("http://localhost:5000", {
+const socket = io(API_URL, {
 	autoConnect: true,
 	reconnectionAttempts: 5,
 	reconnectionDelay: 2000,
@@ -142,10 +143,8 @@ export default function Board() {
 
 		// Persist update
 		try {
-			const res = await fetch(
-				`http://localhost:5000/api/tickets/${draggableId}/move`,
-				{
-					method: "PATCH",
+			const res = await fetch(`${API_BASE}/tickets/${draggableId}/move`, {
+				method: "PATCH",
 					headers: {
 						"Content-Type": "application/json",
 						Authorization: `Bearer ${token}`,

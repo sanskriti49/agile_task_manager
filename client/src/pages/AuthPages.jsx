@@ -17,6 +17,7 @@ import BrandPanel from "../components/ui/BrandPanel";
 import AuthTermsNotice from "../components/AuthTermsNotice";
 import LegalModal from "../components/modals/LegalModal";
 import { toast } from "sonner";
+import { API_BASE } from "../config/api";
 
 const FOCUS_RING =
 	"focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2";
@@ -147,7 +148,7 @@ function SocialButtons() {
 	const handleGoogleSuccess = async (credentialResponse) => {
 		try {
 			setError(null);
-			const res = await fetch("http://localhost:5000/api/auth/google", {
+			const res = await fetch(`${API_BASE}/auth/google`, {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({ token: credentialResponse.credential }),
@@ -238,7 +239,7 @@ export function LoginPage() {
 		setLoading(true);
 
 		try {
-			const res = await fetch("http://localhost:5000/api/auth/login", {
+			const res = await fetch(`${API_BASE}/auth/login`, {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({ email, password }),
@@ -404,7 +405,7 @@ export function SignupPage() {
 		setLoading(true);
 
 		try {
-			const res = await fetch("http://localhost:5000/api/auth/signup", {
+			const res = await fetch(`${API_BASE}/auth/signup`, {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({ name, email, password }),
