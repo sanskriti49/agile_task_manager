@@ -2,7 +2,7 @@ import React from "react";
 
 export default function SegmentedMeter({
 	progress = 0,
-	palette = { fill: "bg-teal-600" },
+	palette = { fill: "bg-teal-500" },
 	segments = 10,
 }) {
 	const safeProgress = Math.min(Math.max(progress, 0), 100);
@@ -13,7 +13,11 @@ export default function SegmentedMeter({
 			{Array.from({ length: segments }).map((_, i) => (
 				<span
 					key={i}
-					className={`h-1.5 flex-1 rounded-sm ${i < filled ? palette?.fill || "bg-teal-600" : "bg-stone-100"}`}
+					className={`h-1.5 flex-1 rounded-sm transition-colors ${
+						i < filled
+							? palette?.fill || "bg-teal-500"
+							: "bg-slate-100 dark:bg-slate-800"
+					}`}
 				/>
 			))}
 		</div>

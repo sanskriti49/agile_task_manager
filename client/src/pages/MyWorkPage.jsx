@@ -146,13 +146,13 @@ export default function MyWorkPage() {
 				{/* Top Header */}
 				<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pb-6 border-b border-slate-200/80 dark:border-slate-800">
 					<div>
-						<div className="flex items-center gap-2 text-teal-600 dark:text-teal-400 font-mono-ui text-xs font-semibold uppercase tracking-wider">
+						<div className="flex items-center gap-2 text-teal-600 dark:text-teal-400  text-xs font-semibold uppercase tracking-wider">
 							<CheckSquare className="h-4 w-4" /> Personal Workspace
 						</div>
-						<h1 className="display text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100 mt-1">
+						<h1 className="display text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 mt-1">
 							My Work
 						</h1>
-						<p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-mono-ui">
+						<p className="work-sans text-xs text-slate-500 dark:text-slate-400 mt-1 ">
 							{stats.totalAssigned} tasks assigned across {projectsList.length}{" "}
 							workspace(s)
 						</p>
@@ -168,7 +168,7 @@ export default function MyWorkPage() {
 				</div>
 
 				{/* KPI Cards Strip */}
-				<div className="grid grid-cols-2 sm:grid-cols-5 gap-3 my-6 font-mono-ui">
+				<div className="work-sans grid grid-cols-2 sm:grid-cols-5 gap-3 my-6">
 					<div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs">
 						<div className="flex items-center justify-between text-slate-400 mb-1">
 							<span className="text-[11px] font-semibold uppercase">
@@ -207,7 +207,7 @@ export default function MyWorkPage() {
 
 					<div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs">
 						<div className="flex items-center justify-between text-sky-500 mb-1">
-							<span className="text-[11px] font-semibold uppercase">
+							<span className="onest text-[11px] font-semibold uppercase">
 								Due Today
 							</span>
 							<Calendar className="h-3.5 w-3.5" />
@@ -231,7 +231,7 @@ export default function MyWorkPage() {
 				</div>
 
 				{/* Filters & Tabs */}
-				<div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-3 rounded-2xl border border-slate-200/80 dark:border-slate-800 mb-6 font-mono-ui">
+				<div className="onest flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-3 rounded-2xl border border-slate-200/80 dark:border-slate-800 mb-6 ">
 					{/* Status Tabs */}
 					<div className="flex items-center gap-1 overflow-x-auto w-full sm:w-auto">
 						{[
@@ -316,7 +316,7 @@ export default function MyWorkPage() {
 						<h3 className="display font-bold text-base text-slate-800 dark:text-slate-200">
 							No tasks found
 						</h3>
-						<p className="text-xs text-slate-400 font-mono-ui mt-1">
+						<p className="text-xs text-slate-400  mt-1">
 							No tasks match your selected view or filters.
 						</p>
 					</div>
@@ -337,7 +337,7 @@ export default function MyWorkPage() {
 										>
 											{group.name}
 										</Link>
-										<span className="font-mono-ui text-[11px] text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">
+										<span className=" text-[11px] text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">
 											{group.tasks.length} task
 											{group.tasks.length !== 1 ? "s" : ""}
 										</span>
@@ -345,14 +345,14 @@ export default function MyWorkPage() {
 
 									<Link
 										to={`/workspace/${group.id}`}
-										className="font-mono-ui text-xs font-semibold text-teal-600 dark:text-teal-400 hover:underline flex items-center gap-1"
+										className="work-sans text-xs font-semibold text-teal-600 dark:text-teal-400 hover:underline flex items-center gap-1"
 									>
 										Open Board <ChevronRight className="h-3.5 w-3.5" />
 									</Link>
 								</div>
 
 								{/* Tasks Table */}
-								<div className="divide-y divide-slate-100 dark:divide-slate-800/60">
+								<div className="work-sans divide-y divide-slate-100 dark:divide-slate-800/60">
 									{group.tasks.map((task) => {
 										const isDone = task.status === "done";
 										const isOverdue =
@@ -402,7 +402,7 @@ export default function MyWorkPage() {
 															</h4>
 														</div>
 														{task.sprint_name && (
-															<span className="inline-block mt-0.5 text-[10px] font-mono-ui font-medium text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/50 px-1.5 py-0.2 rounded">
+															<span className="inline-block mt-0.5 text-[10px]  font-medium text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/50 px-1.5 py-0.2 rounded">
 																Sprint: {task.sprint_name}
 															</span>
 														)}
@@ -410,10 +410,10 @@ export default function MyWorkPage() {
 												</div>
 
 												{/* Right Badges */}
-												<div className="flex items-center gap-3 shrink-0 font-mono-ui text-xs">
+												<div className="flex items-center gap-3 shrink-0  text-xs">
 													{/* Priority */}
 													<span
-														className={`hidden sm:inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${priorityCfg.chip}`}
+														className={`hidden sm:inline-flex items-center gap-1 text-[10.5px] font-semibold px-2 py-0.5 rounded-full border ${priorityCfg.chip}`}
 													>
 														{priorityCfg.label}
 													</span>
@@ -421,7 +421,7 @@ export default function MyWorkPage() {
 													{/* Due Date */}
 													{task.due_date && (
 														<span
-															className={`flex items-center gap-1 text-[11px] font-medium ${
+															className={`flex items-center gap-1 text-[12px] font-medium ${
 																isOverdue
 																	? "text-rose-600 dark:text-rose-400 font-bold"
 																	: "text-slate-400 dark:text-slate-500"
@@ -437,7 +437,7 @@ export default function MyWorkPage() {
 
 													{/* Status badge */}
 													<span
-														className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md ${
+														className={`text-[10.5px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md ${
 															isDone
 																? "bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400"
 																: task.status === "inprogress"
