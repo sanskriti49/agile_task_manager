@@ -24,6 +24,7 @@ import { useAuthStore } from "../store/useAuthStore";
 import { StatSegment } from "../components/StatSegment";
 import { PEOPLE_NAMES } from "../data/people";
 import { activityText } from "../data/activity.jsx";
+import AppLoader from "../components/common/AppLoader";
 
 const FOCUS_RING =
 	"focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2";
@@ -249,12 +250,11 @@ export default function WorkspacesDashboard() {
 
 				{/* Workspaces Grid */}
 				{loading && workspaces.length === 0 ? (
-					<div className="flex flex-col items-center justify-center py-20 text-slate-400">
-						<Loader2 className="h-8 w-8 animate-spin text-teal-600 mb-2" />
-						<span className="text-xs">
-							Loading command center from PostgreSQL...
-						</span>
-					</div>
+					<AppLoader
+						text="Loading workspaces..."
+						type="ring"
+						minH="min-h-[300px]"
+					/>
 				) : workspaces.length === 0 ? (
 					<div className="mt-8">
 						<EmptyState />

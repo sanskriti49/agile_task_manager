@@ -17,16 +17,18 @@ import { Link, useParams } from "react-router-dom";
 import { useWorkspaceStore } from "../store/useWorkspaceStore";
 import { avatarColor } from "../components/utils/avatarColor";
 
+import AppLoader from "../components/common/AppLoader";
+
 export default function ProjectDashboardPage() {
 	const { id: projectId } = useParams();
 	const currentWorkspace = useWorkspaceStore((state) => state.currentWorkspace);
+	const fetchWorkspaceById = useWorkspaceStore(
+		(state) => state.fetchWorkspaceById,
+	);
 	const projectAnalytics = useWorkspaceStore((state) => state.projectAnalytics);
 	const analyticsLoading = useWorkspaceStore((state) => state.analyticsLoading);
 	const fetchProjectAnalytics = useWorkspaceStore(
 		(state) => state.fetchProjectAnalytics,
-	);
-	const fetchWorkspaceById = useWorkspaceStore(
-		(state) => state.fetchWorkspaceById,
 	);
 
 	useEffect(() => {
@@ -38,12 +40,11 @@ export default function ProjectDashboardPage() {
 
 	if (analyticsLoading && !projectAnalytics) {
 		return (
-			<div className="flex flex-col items-center justify-center min-h-[500px] text-slate-400">
-				<Loader2 className="h-8 w-8 animate-spin text-teal-600 mb-2" />
-				<span className="display text-xs">
-					Computing project analytics from database...
-				</span>
-			</div>
+			<AppLoader
+				text="Computing delivery metrics and velocity analytics..."
+				type="ring"
+				minH="min-h-[500px]"
+			/>
 		);
 	}
 

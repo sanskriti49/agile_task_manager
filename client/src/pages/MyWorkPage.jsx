@@ -17,6 +17,7 @@ import { Link } from "react-router-dom";
 import { useWorkspaceStore } from "../store/useWorkspaceStore";
 import { useAuthStore } from "../store/useAuthStore";
 import { PRIORITY } from "../data/constants";
+import AppLoader from "../components/common/AppLoader";
 
 export default function MyWorkPage() {
 	const user = useAuthStore((state) => state.user);
@@ -133,10 +134,11 @@ export default function MyWorkPage() {
 
 	if (myWorkLoading && !myWorkData) {
 		return (
-			<div className="flex flex-col items-center justify-center min-h-[500px] text-slate-400">
-				<Loader2 className="h-8 w-8 animate-spin text-teal-600 mb-2" />
-				<span className="onest text-xs">Loading your workspace tasks...</span>
-			</div>
+			<AppLoader
+				text="Loading your personal tasks..."
+				type="ring"
+				minH="min-h-[500px]"
+			/>
 		);
 	}
 

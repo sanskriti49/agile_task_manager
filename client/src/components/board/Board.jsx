@@ -12,6 +12,7 @@ import { Loader2, Flame, Sliders, BarChart3, Plus } from "lucide-react";
 import WipLimitModal from "../modals/WipLimitModal";
 import CreateSprintModal from "../modals/CreateSprintModal";
 import { API_URL, API_BASE } from "../../config/api";
+import AppLoader from "../common/AppLoader";
 
 const socket = io(API_URL, {
 	autoConnect: true,
@@ -221,10 +222,11 @@ export default function Board() {
 
 	if (loading && !currentWorkspace) {
 		return (
-			<div className="flex flex-col items-center justify-center min-h-[500px] text-slate-400">
-				<Loader2 className="h-8 w-8 animate-spin text-teal-600 mb-2" />
-				<span className="font-mono-ui text-xs">Loading board tasks...</span>
-			</div>
+			<AppLoader
+				text="Loading board tickets & columns..."
+				type="ring"
+				minH="min-h-[500px]"
+			/>
 		);
 	}
 

@@ -15,6 +15,7 @@ import {
 import { Link, useParams } from "react-router-dom";
 import { useWorkspaceStore } from "../store/useWorkspaceStore";
 import { PRIORITY } from "../data/constants";
+import AppLoader from "../components/common/AppLoader";
 
 export default function SprintManagementPage() {
 	const { id: projectId } = useParams();
@@ -71,12 +72,11 @@ export default function SprintManagementPage() {
 
 	if (sprintsLoading && sprints.length === 0) {
 		return (
-			<div className="flex flex-col items-center justify-center min-h-[500px] text-slate-400">
-				<Loader2 className="h-8 w-8 animate-spin text-teal-600 mb-2" />
-				<span className="display text-sm">
-					Loading sprint backlog and cycles...
-				</span>
-			</div>
+			<AppLoader
+				text="Loading sprint backlog and cycles..."
+				type="ring"
+				minH="min-h-[500px]"
+			/>
 		);
 	}
 
