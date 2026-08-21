@@ -29,6 +29,16 @@
 
 html {
 	scroll-behavior: smooth;
+	overflow-x: hidden;
+	width: 100%;
+	max-width: 100vw;
+}
+
+body {
+	overflow-x: hidden;
+	width: 100%;
+	max-width: 100vw;
+	min-height: 100vh;
 }
 
 button {
@@ -110,7 +120,6 @@ button {
 ========================================= */
 
 /* Webkit (Chrome, Safari, Edge) */
-/* Webkit (Chrome, Safari, Edge) */
 ::-webkit-scrollbar {
 	width: 6px;
 	height: 6px;
@@ -119,23 +128,12 @@ button {
 	background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-	background: rgba(
-		100,
-		116,
-		139,
-		0.3
-	); /* Subtle slate for everyday visibility */
+	background: rgba(100, 116, 139, 0.2);
 	border-radius: 999px;
 	transition: background 0.2s ease;
 }
 ::-webkit-scrollbar-thumb:hover {
 	background: rgba(20, 184, 166, 0.5); /* Refreshing Teal on hover */
-}
-
-/* Firefox */
-* {
-	scrollbar-width: thin;
-	scrollbar-color: rgba(100, 116, 139, 0.3) transparent;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -192,7 +192,7 @@ export default function WorkspaceSettingsPage() {
 	};
 
 	return (
-		<div className="w-full bg-slate-50 dark:bg-slate-950 min-h-screen text-slate-900 dark:text-slate-100 font-mono-ui">
+		<div className="w-full bg-slate-50 dark:bg-slate-950 min-h-full text-slate-900 dark:text-slate-100 font-mono-ui">
 			<main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-10">
 				{/* Back Link & Header */}
 				<div className="pb-6 border-b border-slate-200/80 dark:border-slate-800">

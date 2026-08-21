@@ -1,13 +1,18 @@
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, LayoutGrid, CheckSquare, User } from "lucide-react";
 import { useEffect, useState } from "react";
 import { FOCUS_RING, PRODUCT_NAME } from "../data/constants";
-import { NavLink, useNavigate, useLocation } from "react-router-dom";
+import { NavLink, useNavigate, useLocation, Link } from "react-router-dom";
+import { useAuthStore } from "../store/useAuthStore";
 import Logo from "./ui/Logo";
 
 export default function Navbar({ onGetStarted }) {
 	const [isScrolled, setIsScrolled] = useState(false);
 	const navigate = useNavigate();
 	const location = useLocation();
+
+	const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+	const user = useAuthStore((state) => state.user);
+	const firstName = user?.name ? user.name.split(" ")[0] : "Dashboard";
 
 	useEffect(() => {
 		const onScroll = () => {
@@ -82,28 +87,61 @@ export default function Navbar({ onGetStarted }) {
 						</a>
 					))}
 				</nav>
+
+				{/* Right Side Actions: Authenticated vs Guest */}
 				<div className="flex items-center gap-3">
-					<NavLink
-						to="/login"
-						className={`hidden sm:inline text-sm font-medium px-3 py-2 transition-colors rounded-md ${FOCUS_RING} ${
-							isScrolled
-								? "text-slate-600 hover:text-slate-900"
-								: "text-slate-300 hover:text-white"
-						}`}
-					>
-						Log in
-					</NavLink>
-					<NavLink
-						to="/signup"
-						className={`group inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition duration-300 ease-premium ${FOCUS_RING} ${
-							isScrolled
-								? "bg-slate-900 hover:bg-teal-500 text-white hover:shadow-lg hover:shadow-teal-500/30"
-								: "bg-white text-slate-900 hover:bg-teal-500 hover:text-white"
-						}`}
-					>
-						Start free
-						<ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 ease-premium group-hover:translate-x-0.5" />
-					</NavLink>
+					{isAuthenticated ? (
+						<div className="flex items-center gap-2">
+							<Link
+								to="/my-work"
+								className={`hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2 transition-colors rounded-lg ${
+									isScrolled
+										? "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+										: "text-slate-300 hover:text-white hover:bg-slate-800/60"
+								}`}
+							>
+								<CheckSquare className="h-3.5 w-3.5 text-teal-400" />
+								<span>My Work</span>
+							</Link>
+
+							<Link
+								to="/dashboard"
+								className={`group inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs sm:text-sm font-semibold transition duration-300 ease-premium ${FOCUS_RING} ${
+									isScrolled
+										? "bg-slate-900 hover:bg-teal-600 text-white hover:shadow-lg hover:shadow-teal-500/20"
+										: "bg-teal-500 hover:bg-teal-400 text-white hover:shadow-lg hover:shadow-teal-500/30"
+								}`}
+							>
+								<LayoutGrid className="h-3.5 w-3.5" />
+								<span>Go to Dashboard</span>
+								<ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 ease-premium group-hover:translate-x-0.5" />
+							</Link>
+						</div>
+					) : (
+						<>
+							<NavLink
+								to="/login"
+								className={`hidden sm:inline text-sm font-medium px-3 py-2 transition-colors rounded-md ${FOCUS_RING} ${
+									isScrolled
+										? "text-slate-600 hover:text-slate-900"
+										: "text-slate-300 hover:text-white"
+								}`}
+							>
+								Log in
+							</NavLink>
+							<NavLink
+								to="/signup"
+								className={`group inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition duration-300 ease-premium ${FOCUS_RING} ${
+									isScrolled
+										? "bg-slate-900 hover:bg-teal-500 text-white hover:shadow-lg hover:shadow-teal-500/30"
+										: "bg-white text-slate-900 hover:bg-teal-500 hover:text-white"
+								}`}
+							>
+								Start free
+								<ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 ease-premium group-hover:translate-x-0.5" />
+							</NavLink>
+						</>
+					)}
 				</div>
 			</div>
 		</header>

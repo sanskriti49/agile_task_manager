@@ -45,11 +45,10 @@ export default function MainLayout() {
 		if (pageRef.current) {
 			gsap.fromTo(
 				pageRef.current,
-				{ opacity: 0, y: 10 },
+				{ opacity: 0 },
 				{
 					opacity: 1,
-					y: 0,
-					duration: 0.25,
+					duration: 0.2,
 					ease: "power2.out",
 					clearProps: "all",
 				},
@@ -60,11 +59,11 @@ export default function MainLayout() {
 	return (
 		<div className="h-[100dvh] w-full flex overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-0">
 			<Sidebar />
-			<div className="flex-1 flex flex-col min-w-0 min-h-0 relative overflow-y-auto">
+			<div className="flex-1 flex flex-col min-w-0 min-h-0 relative overflow-y-auto overflow-x-hidden">
 				<div
 					ref={pageRef}
 					key={location.pathname}
-					className="flex-1 flex flex-col min-w-0"
+					className="flex-1 flex flex-col min-w-0 min-h-0"
 				>
 					{outlet}
 				</div>

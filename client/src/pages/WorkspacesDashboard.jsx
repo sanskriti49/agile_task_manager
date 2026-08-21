@@ -187,7 +187,7 @@ export default function WorkspacesDashboard() {
 	}, [workspaces, search]);
 
 	return (
-		<div className="w-full bg-slate-50 dark:bg-slate-950 min-h-screen text-slate-900 dark:text-slate-100">
+		<div className="w-full bg-slate-50 dark:bg-slate-950 min-h-full text-slate-900 dark:text-slate-100">
 			<main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
 				{/* Greeting & Header */}
 				<div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between pb-6 border-b border-slate-200/80 dark:border-slate-800">

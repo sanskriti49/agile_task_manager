@@ -155,7 +155,7 @@ export default function LandingPage() {
 	return (
 		<div
 			ref={root}
-			className="bg-white text-slate-800 antialiased"
+			className="bg-white text-slate-800 antialiased overflow-x-hidden w-full relative"
 			style={{ fontFamily: "'Inter', ui-sans-serif, system-ui, sans-serif" }}
 		>
 			<Navbar onGetStarted={handleGetStarted} />
