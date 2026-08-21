@@ -59,23 +59,12 @@ export default function Navbar({ onGetStarted }) {
 			}`}
 		>
 			<div className="max-w-6xl mx-auto px-5 sm:px-8 h-10 flex items-center justify-between">
-				<NavLink
+				<Logo
 					to="/"
-					className="flex items-center gap-2.5 group cursor-pointer"
-				>
-					<Logo
-						isScrolled={isScrolled}
-						className="w-7 h-7 transition-transform duration-300 group-hover:scale-110"
-					/>
-
-					{/* <span
-						className={`display text-[17.5px] font-semibold tracking-tight transition-colors duration-300 ${
-							isScrolled ? "text-slate-900" : "text-white"
-						}`}
-					>
-						{PRODUCT_NAME}
-					</span> */}
-				</NavLink>
+					isScrolled={isScrolled}
+					showText={true}
+					className="w-7 h-7 transition-transform duration-300 group-hover:scale-105"
+				/>
 				<nav className="hidden md:flex items-center gap-2">
 					{navItems.map((item) => (
 						<a

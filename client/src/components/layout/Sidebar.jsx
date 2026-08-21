@@ -69,15 +69,13 @@ export default function Sidebar() {
 					isExpanded ? "justify-between px-1" : "flex-col gap-2"
 				}`}
 			>
-				<div className="flex items-center gap-2.5">
-					<Logo showText={false} />
-					{isExpanded && (
-						<div className="flex items-center gap-1.5">
-							<span className="text-xl font-extrabold tracking-wider uppercase bg-clip-text text-transparent bg-gradient-to-r from-teal-400 via-cyan-300 to-indigo-400">
-								FLUX
-							</span>
-						</div>
-					)}
+				<div className="flex items-center gap-2.5 min-w-0">
+					<Logo
+						to="/dashboard"
+						showText={isExpanded}
+						variant="dark"
+						className="w-7 h-7 shrink-0"
+					/>
 				</div>
 
 				<button

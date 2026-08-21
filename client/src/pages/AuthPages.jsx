@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import AuthShell from "../components/ui/AuthShell";
 import BrandPanel from "../components/ui/BrandPanel";
+import Logo from "../components/ui/Logo";
 import AuthTermsNotice from "../components/AuthTermsNotice";
 import LegalModal from "../components/modals/LegalModal";
 import { toast } from "sonner";
@@ -270,6 +271,9 @@ export function LoginPage() {
 				/>
 			}
 		>
+			<div className="lg:hidden mb-6 flex items-center justify-start">
+				<Logo to="/" variant="light" className="w-8 h-8" showText={true} />
+			</div>
 			<span className="font-mono-ui text-[11px] font-medium uppercase tracking-wide text-teal-600">
 				Authenticate
 			</span>
@@ -436,6 +440,9 @@ export function SignupPage() {
 				/>
 			}
 		>
+			<div className="lg:hidden mb-6 flex items-center justify-start">
+				<Logo to="/" variant="light" className="w-8 h-8" showText={true} />
+			</div>
 			<span className="font-mono-ui inline-flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wide text-teal-600">
 				<Sparkles className="h-3.5 w-3.5" />
 				Claim Access

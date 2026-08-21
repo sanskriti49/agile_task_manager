@@ -1,0 +1,25 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <defs>
+    <linearGradient id="flux-g1" x1="2" y1="2" x2="30" y2="30" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#2DD4BF"/>
+      <stop offset="50%" stop-color="#06B6D4"/>
+      <stop offset="100%" stop-color="#6366F1"/>
+    </linearGradient>
+    <linearGradient id="flux-g2" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#34D399"/>
+      <stop offset="100%" stop-color="#3B82F6"/>
+    </linearGradient>
+    <filter id="flux-gl" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" flood-color="#0D9488" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+  <rect width="32" height="32" rx="8" fill="#0F172A"/>
+  <g filter="url(#flux-gl)">
+    <rect x="5" y="11" width="5.5" height="15" rx="2.75" fill="url(#flux-g1)" opacity="0.85"/>
+    <rect x="13.25" y="6" width="5.5" height="20" rx="2.75" fill="url(#flux-g2)"/>
+    <rect x="21.5" y="13" width="5.5" height="11" rx="2.75" fill="url(#flux-g1)" opacity="0.95"/>
+    <path d="M 7.5 18.5 L 16 10 L 24.5 18.5" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="24.25" cy="8.25" r="2.25" fill="#34D399"/>
+    <circle cx="24.25" cy="8.25" r="1" fill="#FFFFFF"/>
+  </g>
+</svg>
